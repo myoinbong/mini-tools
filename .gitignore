@@ -1,0 +1,11 @@
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Local PHP uploads and temporary files
+uploads/*
+!uploads/.gitkeep
+
+# Local development logs
+*.log
