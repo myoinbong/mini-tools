@@ -5,12 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>색상 팔레트 (Palette Inspector) - Mini Tools</title>
-  <meta name="description" content="AI가 추천해준 색상 코드를 텍스트 상태로 바로 붙여넣어 실시간으로 블로그 UI 디자인에 시각화해보고 관리하는 프리미엄 컬러 팔레트 툴입니다.">
+  <meta name="description" content="자체 색상 하모니 생성, 개별 잠금/편집, 동적 슬롯 확장(6/10/12개), 실전 블로그 UI 목업 검수 및 외부 AI 프롬프트 연동이 가능한 프리미엄 컬러 팔레트 인스펙터입니다.">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap"
     rel="stylesheet">
   <!-- Stylesheets -->
   <link rel="stylesheet" href="common.css">
@@ -67,226 +67,331 @@
       </div>
     </header>
 
-    <!-- Sub Navigation Bar -->
+    <!-- Sub Navigation & Top Control Bar -->
     <div class="view-sub-bar">
-      <a href="index.html" class="back-link">
-        <span>←</span>
-        <span>홈 대시보드로</span>
-      </a>
-      <span class="view-tag">Palette Inspector</span>
+      <div class="sub-bar-left">
+        <a href="index.html" class="back-link">
+          <span>←</span>
+          <span>홈 대시보드</span>
+        </a>
+        <span class="view-tag">Palette Inspector Pro</span>
+      </div>
+      <div class="sub-bar-right">
+        <span class="keyboard-tip"><kbd>Space</kbd> 키를 눌러 잠기지 않은 색상 재추천</span>
+      </div>
     </div>
 
-    <!-- Main Palette Inspector Container -->
-    <main class="app-main" id="palette-tool-panel">
-      <!-- Left Sidebar: Inputs & Palettes -->
-      <aside class="sidebar-area">
-        <!-- 1. Text Import Panel -->
-        <section class="glass-panel text-import-section">
+    <!-- Master Control Toolbar -->
+    <div class="master-toolbar glass-panel">
+      <!-- 1. 슬롯 수 선택 세그먼트 -->
+      <div class="control-group">
+        <span class="control-label">슬롯 수</span>
+        <div class="slot-segmented-control" id="slot-controls">
+          <button type="button" class="segment-btn active" data-slots="6">6개</button>
+          <button type="button" class="segment-btn" data-slots="10">10개</button>
+          <button type="button" class="segment-btn" data-slots="12">12개</button>
+        </div>
+      </div>
+
+      <!-- 2. 색상 조화 알고리즘 룰 선택 -->
+      <div class="control-group">
+        <span class="control-label">조화 규칙</span>
+        <div class="select-wrapper">
+          <select id="harmony-rule-select" class="custom-select">
+            <option value="analogous" selected>✨ 유사색 톤온톤 (Analogous)</option>
+            <option value="complementary">⚡ 강렬한 보색 대비 (Complementary)</option>
+            <option value="pastel">🌸 파스텔 / 소프트 (Soft Pastel)</option>
+            <option value="dark_modern">🌌 딥 / 다크 모던 (Deep Modern)</option>
+            <option value="random">🎲 완전 랜덤 (Vibrant Random)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 3. 새로 생성 버튼 -->
+      <div class="control-group action-group">
+        <button id="generate-palette-btn" class="action-btn primary highlight-pulse" title="단축키: 스페이스바 (Spacebar)">
+          <span class="btn-icon">✨</span>
+          <span>다시 생성</span>
+          <span class="btn-kbd">Space</span>
+        </button>
+      </div>
+
+      <!-- 4. AI & 도구 버튼 그룹 -->
+      <div class="control-group tool-buttons-group">
+        <button id="open-prompt-modal-btn" class="action-btn secondary" title="외부 AI에 사용할 프롬프트 템플릿 확인 및 복사">
+          <span class="btn-icon">💡</span>
+          <span>AI 프롬프트</span>
+        </button>
+        <button id="open-import-modal-btn" class="action-btn secondary" title="AI 답변 또는 텍스트에서 색상 추출하여 적용">
+          <span class="btn-icon">📥</span>
+          <span>가져오기</span>
+        </button>
+        <button id="save-palette-btn" class="action-btn secondary" title="현재 팔레트를 브라우저에 저장">
+          <span class="btn-icon">💾</span>
+          <span>저장</span>
+        </button>
+        <button id="export-code-btn" class="action-btn secondary" title="CSS 변수, Tailwind, JSON 코드로 내보내기">
+          <span class="btn-icon">💻</span>
+          <span>코드 추출</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Palette Inspector Layout (2 Columns) -->
+    <main class="app-main" id="palette-inspector-main">
+      <!-- Left Column: Palette Overview, Cards, & Storage -->
+      <section class="palette-management-area">
+        <!-- 팔레트 한눈에 보기 바 (Overview Strip) -->
+        <div class="glass-panel palette-strip-panel">
+          <div class="strip-header">
+            <span class="section-title">팔레트 개요</span>
+            <span class="strip-count" id="active-count-label">6개 색상 활성화</span>
+          </div>
+          <div class="palette-strip-bar" id="palette-strip-bar" title="클릭 시 색상 복사"></div>
+        </div>
+
+        <!-- 개별 색상 카드 그리드 (Editable & Lockable) -->
+        <div class="glass-panel palette-cards-panel">
           <div class="panel-header">
-            <h2>1. AI 텍스트 붙여넣기</h2>
-            <button id="clear-input-btn" class="text-btn">비우기</button>
+            <div>
+              <h2 class="section-title">색상 팔레트 편집</h2>
+              <p class="section-desc">자물쇠(🔒)로 고정하고, 색상을 클릭해 직접 미세 조정하거나 HEX를 수정하세요.</p>
+            </div>
+            <div class="lock-summary-badge" id="lock-summary">
+              <span class="lock-icon-sm">🔓</span>
+              <span id="lock-count-text">0개 잠김</span>
+            </div>
+          </div>
+          <div class="palette-grid" id="palette-grid">
+            <!-- JS 동적 렌더링 -->
+          </div>
+        </div>
+
+        <!-- 저장된 팔레트 라이브러리 (LocalStorage) -->
+        <div class="glass-panel saved-palettes-panel">
+          <div class="panel-header">
+            <h2 class="section-title">내 저장소 (Saved Palettes)</h2>
+            <span class="storage-tag">LocalStorage</span>
           </div>
           <div class="panel-body">
-            <textarea id="ai-text-input" placeholder="AI가 생성한 답변이나 컬러 스키마를 여기에 통째로 붙여넣으세요...
+            <!-- 브라우저 저장 안내 멘트 -->
+            <div class="storage-notice-box">
+              <span class="notice-icon">ℹ️</span>
+              <div class="notice-content">
+                <p>
+                  팔레트 데이터는 현재 사용 중인 브라우저의 <strong>로컬 스토리지(LocalStorage)</strong>에 저장됩니다.
+                  브라우저 캐시·쿠키를 삭제하거나 시크릿 창을 이용할 경우 데이터가 유실될 수 있으니, 영구 보관이 필요한 색상은 상단 <strong>[💻 코드 추출]</strong>로 코드를 백업해두세요.
+                </p>
+              </div>
+            </div>
 
-예:
-메인 색상은 #4F46E5 로 정했습니다.
-포인트 색상으로는 #F43F5E가 어울립니다.
-배경은 rgb(250, 245, 255)로 깔고,
-본문 텍스트는 #1F2937을 추천합니다.
-카드는 #FFFFFF으로 해주세요."></textarea>
-            <div class="input-info">
-              <span id="detected-count">추출된 색상: 0개</span>
-              <button id="load-sample-btn" class="text-btn secondary">샘플 채우기</button>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2. Palette Display Panel -->
-        <section class="glass-panel palette-section">
-          <div class="panel-header">
-            <h2>2. 실시간 팔레트</h2>
-            <div class="btn-group">
-              <button id="save-palette-btn" class="action-btn sm primary" disabled>
-                <span>💾 저장</span>
-              </button>
-              <button id="export-code-btn" class="action-btn sm" disabled>
-                <span>💻 코드 추출</span>
-              </button>
-            </div>
-          </div>
-          <div class="panel-body">
-            <div id="no-colors-msg" class="placeholder-msg">
-              <p>텍스트를 입력하면 자동으로 색상이 추출됩니다.</p>
-            </div>
-            <div id="palette-grid" class="palette-grid" style="display: none;"></div>
-          </div>
-        </section>
-
-        <!-- 3. Saved Palettes Library -->
-        <section class="glass-panel saved-library-section">
-          <div class="panel-header">
-            <h2>3. 내 저장소</h2>
-          </div>
-          <div class="panel-body">
-            <div class="storage-info-box">
-              <span class="info-icon">ℹ️</span>
-              <p>데이터는 브라우저의 <strong>로컬 스토리지</strong>에 저장되므로, 브라우저 캐시 삭제 시 유실될 수 있습니다. 중요한 색상은 코드 추출로 보관하세요.</p>
-            </div>
             <div id="no-saved-msg" class="placeholder-msg">
-              <p>저장된 팔레트가 없습니다.</p>
+              <p>저장된 팔레트가 없습니다. 상단 [💾 저장] 버튼으로 현재 배색을 저장해보세요.</p>
             </div>
             <div id="saved-palettes-list" class="saved-palettes-list"></div>
           </div>
-        </section>
-      </aside>
+        </div>
+      </section>
 
-      <!-- Right Content: Live Blog Preview & Control -->
-      <section class="preview-area">
-        <div class="glass-panel preview-wrapper-panel">
-          <div class="panel-header preview-header">
-            <div class="title-meta">
-              <h2>실시간 블로그 미리보기</h2>
-              <p>추출된 색상을 블로그 요소에 매핑해 디자인을 조율하세요.</p>
+      <!-- Right Column: Live Blog UI Mockup & Inspector -->
+      <section class="preview-inspector-area">
+        <div class="glass-panel preview-panel">
+          <!-- Preview Control Toolbar -->
+          <div class="preview-toolbar">
+            <div class="preview-title-area">
+              <h2 class="section-title">실전 블로그 프리뷰 목업</h2>
+              <span class="preview-badge">Live Interactive Mockup</span>
             </div>
-            <!-- Mapping Controls -->
-            <div class="mapping-toolbar">
-              <div class="map-row">
-                <div class="map-item">
-                  <label for="map-bg">배경</label>
-                  <select id="map-bg" class="map-select">
-                    <option value="">기본값</option>
-                  </select>
-                </div>
-                <div class="map-item">
-                  <label for="map-text">텍스트</label>
-                  <select id="map-text" class="map-select">
-                    <option value="">기본값</option>
-                  </select>
-                </div>
+
+            <div class="preview-actions">
+              <!-- 목업 라이트/다크 모드 스위치 -->
+              <div class="mockup-theme-switcher" id="mockup-theme-group">
+                <button type="button" class="mockup-mode-btn active" id="mockup-light-btn" data-mode="light" title="블로그 라이트 모드 프리뷰">
+                  ☀️ 라이트
+                </button>
+                <button type="button" class="mockup-mode-btn" id="mockup-dark-btn" data-mode="dark" title="블로그 다크 모드 프리뷰">
+                  🌙 다크
+                </button>
               </div>
-              <div class="map-row">
-                <div class="map-item">
-                  <label for="map-primary">주요색</label>
-                  <select id="map-primary" class="map-select">
-                    <option value="">기본값</option>
-                  </select>
-                </div>
-                <div class="map-item">
-                  <label for="map-accent">포인트</label>
-                  <select id="map-accent" class="map-select">
-                    <option value="">기본값</option>
-                  </select>
-                </div>
-                <div class="map-item">
-                  <label for="map-card">카드</label>
-                  <select id="map-card" class="map-select">
-                    <option value="">기본값</option>
-                  </select>
-                </div>
-              </div>
-              <div class="map-row">
-                <div class="map-item">
-                  <label for="map-nav-bg">헤더 배경</label>
-                  <select id="map-nav-bg" class="map-select">
-                    <option value="">기본값</option>
-                  </select>
-                </div>
-                <div class="map-item">
-                  <label for="map-nav-text">헤더 글자</label>
-                  <select id="map-nav-text" class="map-select">
-                    <option value="">기본값</option>
-                  </select>
-                </div>
-              </div>
-              <div class="map-row">
-                <div class="map-item">
-                  <label for="map-foot-bg">푸터 배경</label>
-                  <select id="map-foot-bg" class="map-select">
-                    <option value="">기본값</option>
-                  </select>
-                </div>
-                <div class="map-item">
-                  <label for="map-foot-text">푸터 글자</label>
-                  <select id="map-foot-text" class="map-select">
-                    <option value="">기본값</option>
-                  </select>
-                </div>
-              </div>
+
+              <!-- 가독성 자동 매핑 버튼 -->
+              <button id="auto-map-btn" class="action-btn sm primary" title="현재 팔레트의 명도를 분석하여 최적의 가독성으로 자동 배색합니다">
+                <span>⚡ 자동 최적 매핑</span>
+              </button>
             </div>
           </div>
 
-          <div class="panel-body canvas-body">
-            <!-- 가독성 가이드라인 스택 -->
-            <div class="contrast-badge-bar">
-              <span class="contrast-indicator" id="contrast-ratio-badge"
-                title="배경색과 본문 텍스트 색상의 대비율입니다. WCAG 2.1 기준 4.5:1 이상(AA 등급)을 권장합니다.">
-                텍스트 가독성 대비: <strong id="contrast-val">--</strong> <span id="contrast-status"></span>
-              </span>
+          <!-- WCAG 명도 대비율 상태 바 -->
+          <div class="contrast-bar-wrapper">
+            <div class="contrast-badge-pill" id="contrast-badge-pill">
+              <span class="contrast-title">WCAG 텍스트 가독성:</span>
+              <strong class="contrast-ratio" id="contrast-ratio-val">--</strong>
+              <span class="wcag-status-badge" id="contrast-status-badge">계산 중</span>
             </div>
+            <div class="contrast-info-text">
+              <span id="contrast-guide-text">본문 텍스트와 배경 사이의 명도 대비 비율입니다. (AA 기준: 4.5:1 이상 권장)</span>
+            </div>
+          </div>
 
-            <!-- Blog Live Preview Container -->
-            <div id="blog-preview-container" class="blog-preview-canvas">
-              <!-- 블로그 헤더 -->
+          <!-- UI 매핑 컨트롤러 드롭다운 그리드 (12개 수동 조절 옵션) -->
+          <details class="mapping-accordion" id="mapping-accordion">
+            <summary class="mapping-accordion-header">
+              <span>🎨 블로그 UI 요소별 색상 매핑 수동 조절 (12개 요소)</span>
+              <span class="accordion-arrow">▼</span>
+            </summary>
+            <div class="mapping-grid">
+              <div class="map-field">
+                <label for="map-bg">1. 전체 배경 (Canvas BG)</label>
+                <select id="map-bg" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-text">2. 본문 기본 글자 (Text)</label>
+                <select id="map-text" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-primary">3. 메인 브랜드 (Primary)</label>
+                <select id="map-primary" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-accent">4. 포인트 버튼 (Accent CTA)</label>
+                <select id="map-accent" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-card">5. 카드 배경 (Card BG)</label>
+                <select id="map-card" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-card-text">6. 카드 글자 (Card Text)</label>
+                <select id="map-card-text" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-muted-text">7. 보조/메타 글자 (Muted Text)</label>
+                <select id="map-muted-text" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-border">8. 테두리/구분선 (Border)</label>
+                <select id="map-border" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-tag">9. 태그/뱃지 배경 (Tag BG)</label>
+                <select id="map-tag" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-tag-text">10. 태그/뱃지 글자 (Tag Text)</label>
+                <select id="map-tag-text" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-code-bg">11. 인용구/코드 배경 (Code BG)</label>
+                <select id="map-code-bg" class="map-select"></select>
+              </div>
+              <div class="map-field">
+                <label for="map-footer-bg">12. 푸터/서피스 (Footer BG)</label>
+                <select id="map-footer-bg" class="map-select"></select>
+              </div>
+            </div>
+          </details>
+
+          <!-- Real Blog Live Canvas Container -->
+          <div class="blog-preview-viewport">
+            <div id="blog-preview-canvas" class="blog-canvas light-mode">
+              <!-- 1. 블로그 상단 네비게이션 -->
               <nav class="blog-nav">
-                <div class="blog-logo">TechLog</div>
-                <div class="blog-links">
-                  <span>Home</span>
-                  <span>Articles</span>
-                  <span>About</span>
+                <div class="blog-brand">
+                  <span class="blog-logo-mark">⚡</span>
+                  <span class="blog-logo-text">TechInsights</span>
                 </div>
-                <button class="blog-btn-cta">구독하기</button>
+                <div class="blog-nav-links">
+                  <span class="nav-link active">아티클</span>
+                  <span class="nav-link">디자인 시스템</span>
+                  <span class="nav-link">소개</span>
+                </div>
+                <button class="blog-cta-btn" type="button">구독하기</button>
               </nav>
 
-              <!-- 블로그 히어로 섹션 -->
+              <!-- 2. 블로그 히어로 메인 아티클 -->
               <header class="blog-hero">
-                <span class="hero-category">TRENDING ARTICLE</span>
-                <h2 class="hero-title">인공지능(AI)을 활용한 모던 웹사이트 컬러 팔레트 구축 가이드</h2>
-                <p class="hero-desc">색상 코드를 바로 시각적으로 검증하여 최상의 가독성과 세련된 감성의 디자인을 구축하는 최적의 노하우를 알아봅니다. 일관성 있는 블로그 분위기는 구독자를 머물게 합니다.</p>
-                <div class="hero-actions">
-                  <button class="blog-btn-primary">자세히 읽기</button>
-                  <button class="blog-btn-secondary">나중에 보기</button>
+                <div class="blog-hero-meta">
+                  <span class="blog-tag-chip">FEATURED STORY</span>
+                  <span class="blog-read-time">6 min read · 2026.09.11</span>
+                </div>
+                <h1 class="blog-hero-headline">AI와 감각적인 색상 하모니로 완성하는 모던 웹 UI 디자인</h1>
+                <p class="blog-hero-desc">
+                  웹사이트의 첫인상은 0.05초 만에 결정됩니다. 시각적 피로도를 낮추는 섬세한 명도 대비와 일관성 있는 브랜드 컬러 팔레트로 사용자 체류 시간을 극대화하세요.
+                </p>
+                <div class="blog-hero-actions">
+                  <button class="blog-btn-primary" type="button">아티클 전체 읽기 →</button>
+                  <button class="blog-btn-secondary" type="button">북마크 저장</button>
                 </div>
               </header>
 
-              <!-- 포스트 카드 그리드 -->
-              <section class="blog-posts-section">
-                <h3>최신 포스트</h3>
-                <div class="blog-posts-grid">
-                  <div class="blog-card">
-                    <div class="card-image-placeholder">🎨</div>
-                    <div class="card-content">
-                      <span class="card-tag">디자인</span>
-                      <h4>색이 주는 감성과 사용자 경험</h4>
-                      <p>우리가 모르는 사이 특정 색깔은 브랜드의 신뢰도를 결정합니다. 효과적인 배색 가이드.</p>
-                      <div class="card-footer">2026.06.21 · 5 min read</div>
+              <!-- 3. 실전 포스트 카드 그리드 (2열) -->
+              <section class="blog-grid-section">
+                <div class="section-subhead">
+                  <h3>최신 포스트</h3>
+                  <span class="view-all-link">전체보기</span>
+                </div>
+                <div class="blog-posts-row">
+                  <!-- 카드 1 -->
+                  <article class="blog-card">
+                    <div class="card-thumb thumb-pattern-1">
+                      <span class="thumb-badge">Design</span>
                     </div>
-                  </div>
-                  <div class="blog-card">
-                    <div class="card-image-placeholder">💻</div>
-                    <div class="card-content">
-                      <span class="card-tag">개발</span>
-                      <h4>2026년 프론트엔드 스타일 트렌드</h4>
-                      <p>글래스모피즘과 유려한 인터랙티브 그래픽이 적용된 세련된 UI의 표준 양식을 다룹니다.</p>
-                      <div class="card-footer">2026.06.20 · 8 min read</div>
+                    <div class="card-body">
+                      <span class="card-meta">UI/UX · 5분 소요</span>
+                      <h4 class="card-title">2026 웹 디자인 트렌드: 톤온톤과 마이크로 인터랙션</h4>
+                      <p class="card-excerpt">복잡한 그라디언트보다 절제된 유사색과 고대비 텍스트가 전달하는 현대적인 미학.</p>
+                      <div class="card-footer">
+                        <span class="card-author">작성자: Dev Studio</span>
+                      </div>
                     </div>
-                  </div>
+                  </article>
+
+                  <!-- 카드 2 -->
+                  <article class="blog-card">
+                    <div class="card-thumb thumb-pattern-2">
+                      <span class="thumb-badge">Code</span>
+                    </div>
+                    <div class="card-body">
+                      <span class="card-meta">프론트엔드 · 8분 소요</span>
+                      <h4 class="card-title">CSS Variables와 다크 모드 테마 설계 전략</h4>
+                      <p class="card-excerpt">WCAG 가독성 기준을 100% 만족하는 다크 모드 시맨틱 토큰 구성 방법론.</p>
+                      <div class="card-footer">
+                        <span class="card-author">작성자: Tech Lead</span>
+                      </div>
+                    </div>
+                  </article>
                 </div>
               </section>
 
-              <!-- 블로그 뉴스레터 구독 섹션 -->
-              <section class="blog-newsletter">
-                <h4>최신 트렌드를 메일함으로 받아보세요</h4>
-                <p>매주 엄선된 기술 및 디자인 아티클을 보내드립니다.</p>
-                <div class="newsletter-form">
-                  <input type="email" placeholder="이메일 주소를 입력하세요" class="blog-input" readonly>
-                  <button class="blog-btn-primary">구독</button>
+              <!-- 4. 본문 요소 샘플 (인용구 & 코드 블록) -->
+              <section class="blog-quote-code-section">
+                <blockquote class="blog-quote">
+                  “좋은 색상 선택은 인터페이스를 장식하는 것이 아니라, 사용자의 시선을 자연스럽게 이끄는 가장 직관적인 내비게이션이다.”
+                </blockquote>
+                <div class="blog-code-snippet">
+                  <span class="code-comment">// 테마 CSS 토큰 적용 예시</span><br>
+                  <span class="code-keyword">const</span> <span class="code-var">theme</span> = {
+                  <span class="code-prop">primary</span>: <span class="code-string">"var(--preview-primary)"</span>,
+                  <span class="code-prop">contrast</span>: <span class="code-string">"AAA"</span>
+                  };
                 </div>
               </section>
 
-              <!-- 푸터 -->
+              <!-- 5. 뉴스레터 구독 섹션 -->
+              <section class="blog-newsletter-card">
+                <div class="newsletter-content">
+                  <h4>주간 테크 & 디자인 레터 구독</h4>
+                  <p>엄선된 프론트엔드 노하우와 색상 디자인 가이드를 매주 금요일 아침 전달합니다.</p>
+                </div>
+                <div class="newsletter-input-group">
+                  <input type="email" class="newsletter-input" placeholder="email@example.com" readonly>
+                  <button class="blog-btn-primary" type="button">구독</button>
+                </div>
+              </section>
+
+              <!-- 6. 블로그 푸터 -->
               <footer class="blog-footer">
-                <p>© 2026 TechLog. All rights reserved.</p>
+                <p>© 2026 TechInsights. Built with Palette Inspector Pro. All rights reserved.</p>
               </footer>
             </div>
           </div>
@@ -295,18 +400,128 @@
     </main>
   </div>
 
-  <!-- Export Code Modal -->
+  <!-- MODAL 1: AI 프롬프트 템플릿 모달 -->
+  <div id="prompt-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content glass">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">💡</span>
+          <h3>외부 AI 추천 프롬프트 템플릿</h3>
+        </div>
+        <button id="close-prompt-modal-btn" class="icon-btn close-modal-btn" aria-label="닫기">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-guide">
+          ChatGPT, Claude 등 외부 AI에 그대로 붙여넣을 수 있는 맞춤형 프롬프트입니다. 현재 선택된 <strong>[<span id="prompt-slot-count-badge">6</span>개 슬롯]</strong>에 맞춰 자동으로 생성되었습니다.
+        </p>
+
+        <div class="prompt-preset-list">
+          <!-- 프롬프트 1 -->
+          <div class="prompt-preset-card">
+            <div class="preset-header">
+              <span class="preset-tag tag-blue">모던 미니멀</span>
+              <h4>1. 모던 미니멀 개발 블로그 테마</h4>
+            </div>
+            <p class="preset-text" id="preset-prompt-1"></p>
+            <button class="action-btn sm primary copy-preset-btn" data-target="preset-prompt-1">
+              <span>📋 프롬프트 복사</span>
+            </button>
+          </div>
+
+          <!-- 프롬프트 2 -->
+          <div class="prompt-preset-card">
+            <div class="preset-header">
+              <span class="preset-tag tag-warm">감성 라이프</span>
+              <h4>2. 따뜻하고 감성적인 브런치/라이프스타일 블로그</h4>
+            </div>
+            <p class="preset-text" id="preset-prompt-2"></p>
+            <button class="action-btn sm primary copy-preset-btn" data-target="preset-prompt-2">
+              <span>📋 프롬프트 복사</span>
+            </button>
+          </div>
+
+          <!-- 프롬프트 3 -->
+          <div class="prompt-preset-card">
+            <div class="preset-header">
+              <span class="preset-tag tag-purple">사이버펑크 다크</span>
+              <h4>3. 다크 모드 최적화 네온 IT 테크 블로그</h4>
+            </div>
+            <p class="preset-text" id="preset-prompt-3"></p>
+            <button class="action-btn sm primary copy-preset-btn" data-target="preset-prompt-3">
+              <span>📋 프롬프트 복사</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="footer-tip">💡 AI 답변을 복사한 뒤 상단의 <strong>[📥 가져오기]</strong> 버튼을 누르면 즉시 팔레트에 채워집니다.</span>
+        <button id="close-prompt-modal-btn-2" class="action-btn secondary">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: AI 텍스트 가져오기 (Import) 모달 -->
+  <div id="import-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content glass">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">📥</span>
+          <h3>AI 텍스트에서 색상 가져오기 (Import)</h3>
+        </div>
+        <button id="close-import-modal-btn" class="icon-btn close-modal-btn" aria-label="닫기">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-guide">
+          ChatGPT나 Claude가 작성한 답변 텍스트 전체를 붙여넣으세요. 정규식으로 HEX/RGB 색상 코드를 자동 추출하여 현재 팔레트에 채워 넣습니다.
+        </p>
+        <div class="textarea-wrapper">
+          <textarea id="import-text-input" placeholder="AI 답변 전체를 여기에 붙여넣으세요...
+예:
+- 메인 배경: #0F172A
+- 포인트 버튼: #6366F1
+- 본문 텍스트: #F8FAFC
+- 카드 배경: #1E293B
+- 서브 포인트: #EC4899"></textarea>
+        </div>
+
+        <div class="import-preview-box">
+          <div class="import-stats">
+            <span id="import-detected-count">감지된 색상: 0개</span>
+            <div class="import-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="import-keep-locked-chk" checked>
+                <span>현재 잠긴(🔒) 색상 유지</span>
+              </label>
+            </div>
+          </div>
+          <div class="import-color-strip" id="import-preview-strip"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="import-load-sample-btn" class="action-btn secondary">샘플 텍스트 로드</button>
+        <div class="footer-actions-right">
+          <button id="cancel-import-btn" class="action-btn secondary">취소</button>
+          <button id="apply-import-btn" class="action-btn primary" disabled>팔레트에 적용하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: 코드 내보내기 (Export) 모달 -->
   <div id="export-modal" class="modal-overlay" style="display: none;">
     <div class="modal-content glass">
       <div class="modal-header">
-        <h3>🎨 코드 내보내기 (Export)</h3>
-        <button id="close-modal-btn" class="icon-btn">&times;</button>
+        <div class="modal-title-wrap">
+          <span class="modal-icon">💻</span>
+          <h3>코드 내보내기 (Export)</h3>
+        </div>
+        <button id="close-modal-btn" class="icon-btn close-modal-btn" aria-label="닫기">&times;</button>
       </div>
       <div class="modal-body">
         <div class="tabs">
           <button class="tab-btn active" data-tab="css-vars">CSS Variables</button>
           <button class="tab-btn" data-tab="tailwind">Tailwind Config</button>
-          <button class="tab-btn" data-tab="json">JSON</button>
+          <button class="tab-btn" data-tab="json">JSON Schema</button>
         </div>
         <div class="tab-panes">
           <div class="tab-pane active" id="pane-css-vars">
@@ -321,7 +536,9 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button id="copy-code-btn" class="action-btn primary">코드 복사</button>
+        <button id="copy-code-btn" class="action-btn primary">
+          <span>📋 코드 복사</span>
+        </button>
       </div>
     </div>
   </div>
