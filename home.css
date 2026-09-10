@@ -1,0 +1,147 @@
+/* Home Dashboard Minimalist Styles */
+.dashboard-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 2.5rem 0 4rem;
+  max-width: 980px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.dashboard-hero {
+  text-align: center;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: var(--accent-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  font-family: var(--font-title);
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f43f5e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+/* Minimal Tools Grid */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.tool-card {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  padding: 2.2rem;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.tool-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 16px 36px 0 rgba(0, 0, 0, 0.28), 0 0 20px rgba(99, 102, 241, 0.12);
+}
+
+.tool-card-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid transparent;
+}
+
+.tool-card-icon.icon-name {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.25));
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.tool-card-icon.icon-palette {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(249, 115, 22, 0.25));
+  border-color: rgba(244, 63, 94, 0.35);
+}
+
+.tool-card-title {
+  font-family: var(--font-title);
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.tool-card-desc {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.75rem;
+  flex: 1;
+}
+
+.tool-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: gap 0.2s ease, color 0.2s ease;
+}
+
+.tool-card:hover .tool-card-action {
+  color: var(--accent-hover);
+  gap: 0.75rem;
+}
+
+.light-theme .tool-card:hover {
+  box-shadow: 0 16px 36px 0 rgba(31, 38, 135, 0.12);
+}

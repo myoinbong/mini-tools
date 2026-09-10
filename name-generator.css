@@ -1,0 +1,196 @@
+/* Name Weaver Tool Specific Styles */
+.name-weaver-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.name-weaver-intro {
+  max-width: 760px;
+  margin: 1rem auto 1.5rem;
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--accent-color);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.name-weaver-intro h2 {
+  margin: 0.35rem 0;
+  font-family: var(--font-title);
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.name-weaver-intro > p:last-child {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.name-weaver-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.name-controls,
+.name-result-panel {
+  min-height: 420px;
+}
+
+.name-controls {
+  display: grid;
+  align-content: start;
+  gap: 1.2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.form-group label,
+.name-upload strong {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.name-controls select,
+.name-controls input[type="file"] {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 0.7rem;
+  font: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.name-controls select:focus {
+  border-color: var(--accent-color);
+}
+
+.name-upload {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 2px dashed var(--panel-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.name-upload:hover {
+  border-color: var(--accent-color);
+}
+
+.name-upload span {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.name-upload input {
+  margin-top: 0.35rem;
+}
+
+.name-upload.is-disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.name-file-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.name-generate-btn {
+  border: 0;
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  color: #fff;
+  background: var(--accent-color);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.name-generate-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+
+.name-generate-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.name-generator-message {
+  min-height: 1.2em;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.name-result-panel {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  background: radial-gradient(circle at 50% 35%, rgba(99, 102, 241, 0.2), transparent 52%), var(--panel-bg);
+}
+
+.generated-name {
+  margin: 1.25rem 0 0.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-title);
+  font-size: clamp(2.2rem, 6vw, 4.2rem);
+  font-weight: 800;
+  cursor: pointer;
+  animation: popIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.generated-name:hover {
+  color: var(--accent-color);
+  transform: scale(1.03);
+}
+
+.name-result-hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .name-weaver-grid,
+  .name-file-grid {
+    grid-template-columns: 1fr;
+  }
+}

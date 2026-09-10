@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이름 생성기 (Name Weaver) - Mini Tools</title>
+  <meta name="description" content="우분투 네이밍 규칙 및 커스텀 단어 프리셋을 활용하여 프로젝트와 캐릭터에 어울리는 이름을 생성합니다.">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap"
+    rel="stylesheet">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="name-generator.css">
+</head>
+
+<body class="dark-theme">
+  <!-- 배경 애니메이션 효과용 데코레이션 블롭 -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="app-layout">
+    <!-- Header -->
+    <header class="app-header">
+      <a href="index.html" class="logo-area" id="logo-link" title="Mini Tools 홈으로 이동">
+        <span class="logo-icon">⚡</span>
+        <h1>Mini Tools</h1>
+        <span class="badge">Suite</span>
+      </a>
+      <div class="header-actions">
+        <nav class="main-nav" id="main-nav" aria-label="메인 네비게이션">
+          <a href="index.html" class="nav-item" id="nav-home">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">홈</span>
+          </a>
+          <a href="name-generator.html" class="nav-item active" id="nav-name-generator">
+            <span class="nav-icon">🏷️</span>
+            <span class="nav-label">이름 생성기</span>
+          </a>
+          <a href="color-palette.html" class="nav-item" id="nav-color-palette">
+            <span class="nav-icon">🎨</span>
+            <span class="nav-label">색상 팔레트</span>
+          </a>
+        </nav>
+        <button id="theme-toggle-btn" class="icon-btn" title="테마 변경 (다크/라이트)" aria-label="테마 변경">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+            <path d="m4.93 4.93 1.41 1.41" />
+            <path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" />
+            <path d="M20 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" />
+            <path d="m19.07 4.93-1.41 1.41" />
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Sub Navigation Bar -->
+    <div class="view-sub-bar">
+      <a href="index.html" class="back-link">
+        <span>←</span>
+        <span>홈 대시보드로</span>
+      </a>
+      <span class="view-tag">Name Weaver</span>
+    </div>
+
+    <!-- Name Weaver Tool Panel -->
+    <main class="name-weaver-panel" id="name-tool-panel">
+      <div class="name-weaver-intro">
+        <p class="eyebrow">IDENTITY GENERATOR</p>
+        <h2>Name Weaver</h2>
+        <p>단어 조합 규칙을 선택해 프로젝트와 캐릭터에 어울리는 이름을 만들어보세요.</p>
+      </div>
+      <div class="name-weaver-grid">
+        <div class="glass-panel name-controls">
+          <div class="form-group">
+            <label for="name-rule-type">생성 규칙</label>
+            <select id="name-rule-type">
+              <option value="">규칙을 선택하세요</option>
+              <option value="rule1">규칙 1: 내 파일 조합</option>
+              <option value="rule2">규칙 2: 샘플 무작위</option>
+              <option value="rule3">규칙 3: 샘플 초성 일치</option>
+              <option value="rule4">규칙 4: 우분투 스타일</option>
+            </select>
+          </div>
+          <label class="name-upload" for="name-file-upload">
+            <strong>단어 파일 추가</strong>
+            <span>.txt, .csv, .md 파일을 선택하면 목록에 추가됩니다.</span>
+            <input id="name-file-upload" type="file" accept=".txt,.csv,.md,text/plain,text/csv,text/markdown" multiple>
+          </label>
+          <div class="name-file-grid">
+            <div class="form-group">
+              <label for="name-file-one">앞 단어</label>
+              <select id="name-file-one"><option value="">파일 선택...</option></select>
+            </div>
+            <div class="form-group">
+              <label for="name-file-two">뒤 단어</label>
+              <select id="name-file-two"><option value="">파일 선택...</option></select>
+            </div>
+          </div>
+          <button id="generate-name-btn" class="name-generate-btn" type="button" disabled>새 이름 생성하기 <span aria-hidden="true">✦</span></button>
+          <p id="name-generator-message" class="name-generator-message" role="status"></p>
+        </div>
+        <div class="glass-panel name-result-panel">
+          <p class="eyebrow">YOUR NEXT IDENTITY</p>
+          <button id="generated-name" class="generated-name" type="button" hidden aria-label="생성된 이름 복사"></button>
+          <p id="name-result-hint" class="name-result-hint">생성된 이름이 여기에 나타납니다.<br>결과를 클릭하면 복사됩니다.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="common.js"></script>
+  <script src="name-generator.js"></script>
+</body>
+
+</html>
