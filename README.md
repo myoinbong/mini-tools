@@ -22,3 +22,6 @@ python3 -m http.server 4173
 - `style.css`: 통합 스타일
 
 Name Weaver의 파일 업로드는 현재 브라우저 메모리에서만 처리됩니다. 서버 저장이 필요하면 PHP 업로드 기능을 별도로 다시 연결해야 합니다.
+
+## 아이콘 검색
+https://googlefonts.github.io/noto-emoji-animation/
