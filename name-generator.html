@@ -153,138 +153,7 @@
       }
     }
 
-    /* Layout */
-    .app-layout {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 1rem 1.5rem 3rem;
-      gap: 1.25rem;
-    }
-
-    /* Header */
-    .app-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--panel-border);
-    }
-
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .logo-icon {
-      font-size: 1.4rem;
-      background: linear-gradient(135deg, #6366f1, #a855f7);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: inline-block;
-      filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.4));
-    }
-
-    .logo-area h1 {
-      font-family: var(--font-title);
-      font-size: 1.35rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-
-    .badge {
-      background: var(--accent-light);
-      color: var(--accent-color);
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 0.2rem 0.55rem;
-      border-radius: var(--radius-full);
-      border: 1px solid rgba(99, 102, 241, 0.25);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .main-nav {
-      display: flex;
-      align-items: center;
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-full);
-      padding: 0.25rem;
-      backdrop-filter: blur(12px);
-    }
-
-    .nav-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.4rem 0.85rem;
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border-radius: var(--radius-full);
-      transition: all 0.2s ease;
-    }
-
-    .nav-item:hover {
-      color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .nav-item.active {
-      color: #fff;
-      background: var(--accent-color);
-      box-shadow: 0 2px 10px var(--accent-glow);
-    }
-
-    .icon-btn {
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      color: var(--text-primary);
-      width: 38px;
-      height: 38px;
-      border-radius: var(--radius-full);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      backdrop-filter: blur(12px);
-      transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
-    }
-
-    .icon-btn:hover {
-      transform: translateY(-1px);
-      border-color: var(--accent-color);
-    }
-
-    .sun-icon {
-      display: none;
-    }
-
-    .moon-icon {
-      display: block;
-    }
-
-    body.light-theme .sun-icon {
-      display: block;
-    }
-
-    body.light-theme .moon-icon {
-      display: none;
-    }
+    /* Layout & Header styles are unified globally via common.css */
 
     /* Sub Navigation Bar */
     .view-sub-bar {
@@ -1265,9 +1134,6 @@
         grid-template-columns: 1fr;
       }
 
-      .app-layout {
-        padding: 0.75rem 1rem 2rem;
-      }
     }
   </style>
 </head>
