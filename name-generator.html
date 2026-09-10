@@ -5,26 +5,1098 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>이름 생성기 (Name Weaver) - Mini Tools</title>
-  <meta name="description" content="우분투 네이밍 규칙 및 커스텀 단어 프리셋을 활용하여 프로젝트와 캐릭터에 어울리는 이름을 생성합니다.">
+  <meta name="description" content="우분투 두운 매칭, 감성 도시 네이밍, 코드네임, 스타트업 및 판타지 프리셋을 지원하는 고품질 단어 조합 이름 생성기">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap"
     rel="stylesheet">
-  <!-- Stylesheets -->
+  <!-- Optional Mini Tools Common CSS (Standalone fallback included) -->
   <link rel="stylesheet" href="common.css">
-  <link rel="stylesheet" href="name-generator.css">
+
+  <style>
+    /* ==========================================================================
+       CSS Variables & Base Theme Setup (Self-Contained & Mini Tools Compatible)
+       ========================================================================== */
+    :root {
+      --bg-color: #0b0f19;
+      --bg-gradient-1: #0f172a;
+      --bg-gradient-2: #020617;
+      --panel-bg: rgba(30, 41, 59, 0.55);
+      --panel-border: rgba(255, 255, 255, 0.09);
+      --panel-hover: rgba(51, 65, 85, 0.4);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-color: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-light: rgba(99, 102, 241, 0.15);
+      --accent-glow: rgba(99, 102, 241, 0.35);
+      --success-color: #10b981;
+      --success-light: rgba(16, 185, 129, 0.15);
+      --gold-color: #f59e0b;
+      --gold-light: rgba(245, 158, 11, 0.15);
+      --card-bg-internal: rgba(15, 23, 42, 0.65);
+      --input-bg: rgba(15, 23, 42, 0.7);
+      --input-border: rgba(255, 255, 255, 0.12);
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 20px 45px rgba(0, 0, 0, 0.45);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-title: 'Outfit', var(--font-sans);
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    body.light-theme {
+      --bg-color: #f8fafc;
+      --bg-gradient-1: #f1f5f9;
+      --bg-gradient-2: #e2e8f0;
+      --panel-bg: rgba(255, 255, 255, 0.82);
+      --panel-border: rgba(0, 0, 0, 0.08);
+      --panel-hover: rgba(241, 245, 249, 0.85);
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --accent-color: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-light: rgba(79, 70, 229, 0.1);
+      --accent-glow: rgba(79, 70, 229, 0.25);
+      --success-color: #059669;
+      --success-light: rgba(5, 150, 105, 0.1);
+      --gold-color: #d97706;
+      --gold-light: rgba(217, 119, 6, 0.12);
+      --card-bg-internal: rgba(255, 255, 255, 0.9);
+      --input-bg: rgba(255, 255, 255, 0.95);
+      --input-border: rgba(0, 0, 0, 0.12);
+      --shadow-sm: 0 4px 12px rgba(31, 38, 135, 0.06);
+      --shadow-md: 0 10px 25px rgba(31, 38, 135, 0.09);
+      --shadow-lg: 0 20px 40px rgba(31, 38, 135, 0.12);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-color);
+      background-image: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+                        radial-gradient(circle at 85% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 45%),
+                        linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      line-height: 1.5;
+    }
+
+    /* Animated background glow blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(110px);
+      opacity: 0.14;
+      z-index: -1;
+      pointer-events: none;
+      animation: floatSlow 24s infinite alternate ease-in-out;
+    }
+    .blob-1 { top: 5%; left: 5%; width: 450px; height: 450px; background-color: #6366f1; }
+    .blob-2 { bottom: 8%; right: 6%; width: 520px; height: 520px; background-color: #ec4899; animation-delay: -7s; }
+    .blob-3 { top: 45%; left: 48%; width: 340px; height: 340px; background-color: #06b6d4; animation-delay: -14s; }
+
+    @keyframes floatSlow {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(45px, -35px) scale(1.08); }
+      100% { transform: translate(-30px, 30px) scale(0.94); }
+    }
+
+    /* Layout */
+    .app-layout {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem 3rem;
+      gap: 1.25rem;
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--panel-border);
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      color: inherit;
+    }
+    .logo-icon {
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+      filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.4));
+    }
+    .logo-area h1 {
+      font-family: var(--font-title);
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .badge {
+      background: var(--accent-light);
+      color: var(--accent-color);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .main-nav {
+      display: flex;
+      align-items: center;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-full);
+      padding: 0.25rem;
+      backdrop-filter: blur(12px);
+    }
+    .nav-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.85rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      transition: all 0.2s ease;
+    }
+    .nav-item:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-item.active {
+      color: #fff;
+      background: var(--accent-color);
+      box-shadow: 0 2px 10px var(--accent-glow);
+    }
+    .icon-btn {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      color: var(--text-primary);
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-full);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+    }
+    .icon-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent-color);
+    }
+    .sun-icon { display: none; }
+    .moon-icon { display: block; }
+    body.light-theme .sun-icon { display: block; }
+    body.light-theme .moon-icon { display: none; }
+
+    /* Sub Navigation Bar */
+    .view-sub-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.25rem 0.2rem;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+    .back-link:hover {
+      color: var(--accent-color);
+    }
+    .sub-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .view-tag {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      color: var(--accent-color);
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.04em;
+    }
+    .fav-drawer-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: var(--gold-light);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--gold-color);
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .fav-drawer-trigger:hover {
+      background: var(--gold-color);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    .fav-badge-count {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+    }
+
+    /* Hero Intro */
+    .hero-intro {
+      text-align: center;
+      margin: 0.75rem auto 1.5rem;
+      max-width: 780px;
+    }
+    .eyebrow {
+      color: var(--accent-color);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+    .hero-intro h2 {
+      font-family: var(--font-title);
+      font-size: clamp(2rem, 4.5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      margin-bottom: 0.6rem;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #6366f1 0%, #ec4899 70%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    /* Preset Tabs Container */
+    .preset-nav-wrapper {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+    .preset-tabs {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.6rem;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-lg);
+      padding: 0.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .preset-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      padding: 0.85rem 0.5rem;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
+    }
+    .preset-tab .tab-icon {
+      font-size: 1.35rem;
+      transition: transform 0.22s ease;
+    }
+    .preset-tab .tab-sub {
+      font-size: 0.68rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+    .preset-tab:hover {
+      background: var(--panel-hover);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    .preset-tab:hover .tab-icon {
+      transform: scale(1.12);
+    }
+    .preset-tab.active {
+      background: var(--accent-light);
+      border-color: rgba(99, 102, 241, 0.35);
+      color: var(--text-primary);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);
+    }
+    .preset-tab.active .tab-icon {
+      transform: scale(1.15);
+    }
+    .preset-tab.active .tab-sub {
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    /* Main Workspace Layout */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* Glass Panels */
+    .glass-card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 1.4rem;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    /* Controls Panel */
+    .controls-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      position: sticky;
+      top: 1rem;
+    }
+    .card-section-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Preset Info Box */
+    .preset-info-box {
+      background: var(--card-bg-internal);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-md);
+      padding: 0.9rem;
+    }
+    .preset-info-box h4 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.25rem;
+    }
+    .preset-info-box p {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    /* Form Elements & Option Groups */
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .control-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .label-hint {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    /* Segmented Button Groups */
+    .segmented-control {
+      display: grid;
+      background: var(--card-bg-internal);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-md);
+      padding: 0.25rem;
+      gap: 0.25rem;
+    }
+    .segmented-control.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .segmented-control.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .seg-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 0.45rem 0.35rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+    }
+    .seg-btn:hover {
+      color: var(--text-primary);
+    }
+    .seg-btn.active {
+      background: var(--accent-color);
+      color: #fff;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    /* Custom Inputs & Selects */
+    .custom-select,
+    .custom-input,
+    .custom-textarea {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 0.65rem 0.85rem;
+      font-size: 0.84rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .custom-select:focus,
+    .custom-input:focus,
+    .custom-textarea:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    /* Mode Specific Controls Container */
+    .mode-options-container {
+      background: var(--card-bg-internal);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-md);
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    /* Custom Words Mode Upload & Textareas */
+    .custom-mode-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .custom-dropzone {
+      border: 2px dashed var(--panel-border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(15, 23, 42, 0.3);
+      position: relative;
+    }
+    .custom-dropzone:hover, .custom-dropzone.drag-over {
+      border-color: var(--accent-color);
+      background: var(--accent-light);
+    }
+    .custom-dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .dropzone-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+    .dropzone-desc {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      display: block;
+    }
+    .custom-textarea-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+    .custom-textarea-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .custom-textarea-col label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+    }
+    .custom-textarea {
+      height: 90px;
+      resize: vertical;
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      line-height: 1.4;
+      white-space: pre;
+    }
+    .sample-fill-btn {
+      background: transparent;
+      border: 1px solid var(--panel-border);
+      color: var(--text-secondary);
+      padding: 0.35rem 0.65rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .sample-fill-btn:hover {
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+      background: var(--accent-light);
+    }
+
+    /* Main Action Button */
+    .action-btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    .btn-generate {
+      border: none;
+      background: linear-gradient(135deg, var(--accent-color) 0%, #818cf8 100%);
+      color: #fff;
+      padding: 0.9rem 1.2rem;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 18px var(--accent-glow);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s, filter 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45);
+      filter: brightness(1.06);
+    }
+    .btn-generate:active {
+      transform: translateY(0);
+    }
+    .kbd-shortcut {
+      background: rgba(0, 0, 0, 0.25);
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .shortcut-hint {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+    }
+
+    /* Results Showcase Area */
+    .results-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      min-height: 520px;
+    }
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--panel-border);
+    }
+    .results-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .results-count-badge {
+      background: var(--accent-light);
+      color: var(--accent-color);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+    .results-mode-badge {
+      background: var(--card-bg-internal);
+      color: var(--text-secondary);
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--panel-border);
+    }
+    .results-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-secondary {
+      background: var(--card-bg-internal);
+      border: 1px solid var(--panel-border);
+      color: var(--text-secondary);
+      padding: 0.45rem 0.85rem;
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent-color);
+      color: var(--text-primary);
+      background: var(--panel-hover);
+    }
+
+    /* Result Cards Grid */
+    .names-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.85rem;
+    }
+    .name-card {
+      background: var(--card-bg-internal);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+      animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .name-card:hover {
+      transform: translateY(-3px) scale(1.015);
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(99, 102, 241, 0.2);
+    }
+    .name-card:active {
+      transform: scale(0.985);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    .card-index {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .card-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .card-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      transition: all 0.18s ease;
+    }
+    .card-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+    .card-btn.btn-star.favorited {
+      color: var(--gold-color);
+      transform: scale(1.15);
+    }
+    .card-btn.btn-copy:hover {
+      color: var(--accent-color);
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .card-main-name {
+      font-family: var(--font-title);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.25;
+      word-break: break-word;
+      letter-spacing: -0.015em;
+    }
+    .card-sub-name {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.8rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .card-tag {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .card-copy-hint {
+      font-size: 0.68rem;
+      color: var(--accent-color);
+      font-weight: 600;
+      opacity: 0;
+      transform: translateX(4px);
+      transition: all 0.2s ease;
+    }
+    .name-card:hover .card-copy-hint {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Empty / Initial State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 1.5rem;
+      gap: 1rem;
+      color: var(--text-secondary);
+    }
+    .empty-state-icon {
+      font-size: 3.5rem;
+      filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.2));
+      animation: float 3s ease-in-out infinite;
+    }
+    .empty-state h3 {
+      font-family: var(--font-title);
+      font-size: 1.3rem;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    .empty-state p {
+      font-size: 0.88rem;
+      max-width: 400px;
+      color: var(--text-muted);
+    }
+
+    /* Slide-over Favorites Drawer */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .drawer-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .favorites-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg-color);
+      border-left: 1px solid var(--panel-border);
+      box-shadow: var(--shadow-lg);
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .drawer-overlay.open .favorites-drawer {
+      transform: translateX(0);
+    }
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--panel-border);
+    }
+    .drawer-title {
+      font-family: var(--font-title);
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .drawer-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .drawer-close-btn:hover {
+      background: var(--panel-hover);
+      color: var(--text-primary);
+    }
+    .drawer-actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.5rem;
+      background: var(--card-bg-internal);
+      border-bottom: 1px solid var(--panel-border);
+    }
+    .drawer-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .fav-item-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .fav-item-card:hover {
+      border-color: var(--accent-color);
+      transform: translateX(3px);
+    }
+    .fav-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .fav-item-name {
+      font-family: var(--font-title);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .fav-item-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .fav-item-btns {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--panel-border);
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.84rem;
+      font-weight: 600;
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      pointer-events: auto;
+    }
+    body.light-theme .toast {
+      background: rgba(255, 255, 255, 0.95);
+      color: #0f172a;
+      border-color: rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    .toast.success { border-left: 4px solid var(--success-color); }
+    .toast.info { border-left: 4px solid var(--accent-color); }
+
+    /* Keyframe Animations */
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .preset-tabs {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+      .controls-card {
+        position: static;
+      }
+    }
+    @media (max-width: 640px) {
+      .preset-tabs {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .custom-textarea-grid {
+        grid-template-columns: 1fr;
+      }
+      .names-grid {
+        grid-template-columns: 1fr;
+      }
+      .app-layout {
+        padding: 0.75rem 1rem 2rem;
+      }
+    }
+  </style>
 </head>
 
 <body class="dark-theme">
-  <!-- 배경 애니메이션 효과용 데코레이션 블롭 -->
+  <!-- Dynamic Atmospheric Glow Blobs -->
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
   <div class="blob blob-3"></div>
 
   <div class="app-layout">
-    <!-- Header -->
+    <!-- Header Navigation -->
     <header class="app-header">
       <a href="index.html" class="logo-area" id="logo-link" title="Mini Tools 홈으로 이동">
         <span class="logo-icon">⚡</span>
@@ -47,19 +1119,12 @@
           </a>
         </nav>
         <button id="theme-toggle-btn" class="icon-btn" title="테마 변경 (다크/라이트)" aria-label="테마 변경">
-          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="4" />
-            <path d="M12 2v2" />
-            <path d="M12 20v2" />
-            <path d="m4.93 4.93 1.41 1.41" />
-            <path d="m17.66 17.66 1.41 1.41" />
-            <path d="M2 12h2" />
-            <path d="M20 12h2" />
-            <path d="m6.34 17.66-1.41 1.41" />
-            <path d="m19.07 4.93-1.41 1.41" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
           </svg>
-          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
           </svg>
@@ -73,61 +1138,1362 @@
         <span>←</span>
         <span>홈 대시보드로</span>
       </a>
-      <span class="view-tag">Name Weaver</span>
+      <div class="sub-bar-actions">
+        <span class="view-tag">Name Weaver v2.0</span>
+        <button id="open-favorites-btn" class="fav-drawer-trigger" type="button" aria-label="즐겨찾기 보관함 열기">
+          <span>⭐</span>
+          <span>보관함</span>
+          <span id="fav-counter-badge" class="fav-badge-count">0</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Name Weaver Tool Panel -->
-    <main class="name-weaver-panel" id="name-tool-panel">
-      <div class="name-weaver-intro">
-        <p class="eyebrow">IDENTITY GENERATOR</p>
-        <h2>Name Weaver</h2>
-        <p>단어 조합 규칙을 선택해 프로젝트와 캐릭터에 어울리는 이름을 만들어보세요.</p>
+    <!-- Hero Introduction -->
+    <section class="hero-intro">
+      <p class="eyebrow">IDENTITY & CODENAME WEAVER</p>
+      <h2>완벽한 정체성을 직조하는 <span class="gradient-text">이름 생성기</span></h2>
+      <p class="hero-desc">우분투 두운 매칭부터 감성 도시, 릴리즈 코드네임, 스타트업 및 판타지까지—취향과 목적에 맞는 매력적인 이름을 즉시 생성하세요.</p>
+    </section>
+
+    <!-- Preset Navigation Tabs (6 Preset Modes) -->
+    <div class="preset-nav-wrapper">
+      <div class="preset-tabs" id="preset-tabs" role="tablist">
+        <button class="preset-tab active" data-preset="ubuntu" role="tab" aria-selected="true">
+          <span class="tab-icon">🐧</span>
+          <span class="tab-title">우분투 스타일</span>
+          <span class="tab-sub">두운/초성 일치</span>
+        </button>
+        <button class="preset-tab" data-preset="city" role="tab" aria-selected="false">
+          <span class="tab-icon">🏙️</span>
+          <span class="tab-title">도시 + 감성</span>
+          <span class="tab-sub">날씨/시간/분위기</span>
+        </button>
+        <button class="preset-tab" data-preset="codename" role="tab" aria-selected="false">
+          <span class="tab-icon">🚀</span>
+          <span class="tab-title">프로젝트 코드네임</span>
+          <span class="tab-sub">천체/신화 + 시스템</span>
+        </button>
+        <button class="preset-tab" data-preset="startup" role="tab" aria-selected="false">
+          <span class="tab-icon">💡</span>
+          <span class="tab-title">스타트업 & 서비스</span>
+          <span class="tab-sub">합성어/접미사</span>
+        </button>
+        <button class="preset-tab" data-preset="fantasy" role="tab" aria-selected="false">
+          <span class="tab-icon">⚔️</span>
+          <span class="tab-title">판타지 & 인디게임</span>
+          <span class="tab-sub">칭호 + 클래스/오브젝트</span>
+        </button>
+        <button class="preset-tab" data-preset="custom" role="tab" aria-selected="false">
+          <span class="tab-icon">📂</span>
+          <span class="tab-title">커스텀 텍스트/파일</span>
+          <span class="tab-sub">나만의 단어 조합</span>
+        </button>
       </div>
-      <div class="name-weaver-grid">
-        <div class="glass-panel name-controls">
-          <div class="form-group">
-            <label for="name-rule-type">생성 규칙</label>
-            <select id="name-rule-type">
-              <option value="">규칙을 선택하세요</option>
-              <option value="rule1">규칙 1: 내 파일 조합</option>
-              <option value="rule2">규칙 2: 샘플 무작위</option>
-              <option value="rule3">규칙 3: 샘플 초성 일치</option>
-              <option value="rule4">규칙 4: 우분투 스타일</option>
-            </select>
-          </div>
-          <label class="name-upload" for="name-file-upload">
-            <strong>단어 파일 추가</strong>
-            <span>.txt, .csv, .md 파일을 선택하면 목록에 추가됩니다.</span>
-            <input id="name-file-upload" type="file" accept=".txt,.csv,.md,text/plain,text/csv,text/markdown" multiple>
-          </label>
-          <div class="name-file-grid">
-            <div class="form-group">
-              <label for="name-file-one">앞 단어</label>
-              <select id="name-file-one"><option value="">파일 선택...</option></select>
-            </div>
-            <div class="form-group">
-              <label for="name-file-two">뒤 단어</label>
-              <select id="name-file-two"><option value="">파일 선택...</option></select>
-            </div>
-          </div>
-          <button id="generate-name-btn" class="name-generate-btn" type="button" disabled>새 이름 생성하기 <span aria-hidden="true">✦</span></button>
-          <p id="name-generator-message" class="name-generator-message" role="status"></p>
+    </div>
+
+    <!-- Main Workspace (Controls + Results Grid) -->
+    <main class="workspace-grid">
+      <!-- Controls Column -->
+      <aside class="glass-card controls-card">
+        <!-- Current Preset Description Card -->
+        <div class="preset-info-box" id="preset-info-box">
+          <h4 id="preset-info-title">🐧 우분투 스타일</h4>
+          <p id="preset-info-desc">동일한 알파벳(A~Z) 또는 한국어 초성(ㄱ~ㅎ) 두운을 매칭하여 'Focal Fossa', '기민한 기린' 형태의 리듬감 있는 이름을 생성합니다.</p>
         </div>
-        <div class="glass-panel name-result-panel">
-          <p class="eyebrow">YOUR NEXT IDENTITY</p>
-          <button id="generated-name" class="generated-name" type="button" hidden aria-label="생성된 이름 복사"></button>
-          <p id="name-result-hint" class="name-result-hint">생성된 이름이 여기에 나타납니다.<br>결과를 클릭하면 복사됩니다.</p>
+
+        <!-- Language Option Selector -->
+        <div class="control-group">
+          <div class="control-label">
+            <span>언어 모드 (Language)</span>
+            <span class="label-hint">출력 표기 방식</span>
+          </div>
+          <div class="segmented-control cols-3" id="lang-segmented">
+            <button type="button" class="seg-btn active" data-lang="ko">한국어 (KO)</button>
+            <button type="button" class="seg-btn" data-lang="en">영어 (EN)</button>
+            <button type="button" class="seg-btn" data-lang="both">한·영 병기</button>
+          </div>
         </div>
-      </div>
+
+        <!-- Quantity Selector -->
+        <div class="control-group">
+          <div class="control-label">
+            <span>생성 수량</span>
+            <span class="label-hint">한 번에 생성할 개수</span>
+          </div>
+          <div class="segmented-control cols-4" id="count-segmented">
+            <button type="button" class="seg-btn" data-count="5">5개</button>
+            <button type="button" class="seg-btn active" data-count="10">10개</button>
+            <button type="button" class="seg-btn" data-count="20">20개</button>
+            <button type="button" class="seg-btn" data-count="50">50개</button>
+          </div>
+        </div>
+
+        <!-- Mode-Specific Options Area -->
+        <div class="mode-options-container" id="mode-options-container">
+          <!-- Dynamically populated per preset -->
+        </div>
+
+        <!-- Primary Action Button -->
+        <div class="action-btn-group">
+          <button id="generate-btn" class="btn-generate" type="button">
+            <span>새 이름 생성하기</span>
+            <span class="kbd-shortcut">Space / Enter</span>
+          </button>
+          <p class="shortcut-hint">
+            <span>💡 빈 화면에서 <code>Space</code> 또는 <code>Enter</code>를 누르면 즉시 생성됩니다.</span>
+          </p>
+        </div>
+      </aside>
+
+      <!-- Results Column -->
+      <section class="glass-card results-card">
+        <div class="results-header">
+          <div class="results-meta">
+            <h3 class="card-section-title">생성 결과</h3>
+            <span class="results-count-badge" id="results-count-badge">0개 결과</span>
+            <span class="results-mode-badge" id="results-mode-badge">우분투 스타일</span>
+          </div>
+          <div class="results-actions">
+            <button id="copy-all-btn" class="btn-secondary" type="button" title="생성된 모든 이름 클립보드 복사">
+              <span>📋</span>
+              <span>전체 복사</span>
+            </button>
+            <button id="clear-results-btn" class="btn-secondary" type="button" title="결과 화면 비우기">
+              <span>✕</span>
+              <span>지우기</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Result Grid Container -->
+        <div id="names-grid" class="names-grid">
+          <!-- Initial Placeholder State -->
+          <div class="empty-state" id="empty-state">
+            <div class="empty-state-icon">✨</div>
+            <h3>새로운 정체성을 발견할 준비가 되셨나요?</h3>
+            <p>좌측의 [새 이름 생성하기] 버튼을 누르거나 키보드의 <code>Space</code> / <code>Enter</code> 키를 눌러 감각적인 이름을 만들어보세요.</p>
+          </div>
+        </div>
+      </section>
     </main>
+  </div>
+
+  <!-- Slide-over Favorites Drawer -->
+  <div class="drawer-overlay" id="drawer-overlay">
+    <div class="favorites-drawer" id="favorites-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <span>⭐</span>
+          <span>보관함 (즐겨찾기)</span>
+        </div>
+        <button id="close-drawer-btn" class="drawer-close-btn" type="button" aria-label="보관함 닫기">✕</button>
+      </div>
+      <div class="drawer-actions-bar">
+        <span id="fav-drawer-count" style="font-size:0.8rem; font-weight:600; color:var(--text-secondary);">총 0개 저장됨</span>
+        <div style="display:flex; gap:0.4rem;">
+          <button id="copy-fav-all-btn" class="btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.75rem;" type="button">전체 복사</button>
+          <button id="clear-fav-all-btn" class="btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.75rem; color:#ef4444;" type="button">비우기</button>
+        </div>
+      </div>
+      <div class="drawer-list" id="drawer-list">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </div>
   </div>
 
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
-  <!-- Scripts -->
-  <script src="common.js"></script>
-  <script src="name-generator.js"></script>
+  <!-- ==========================================================================
+       Complete Embedded ES6+ Application Logic (Standalone / Framework-Free)
+       ========================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ==========================================================================
+         1. Complete Preset Dictionaries (30~50+ Rich Curated Words per Category)
+         ========================================================================== */
+
+      // 1-1. Ubuntu Preset (A~Z alliterative for English & 초성 매칭 for Korean)
+      const UBUNTU_DATA = {
+        letters: ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
+        en: {
+          A: { adj: ['Agile', 'Astral', 'Ancient', 'Amber', 'Atomic', 'Apex', 'Adept'], noun: ['Antelope', 'Alpaca', 'Armadillo', 'Albatross', 'Alligator', 'Axolotl', 'Aardvark'] },
+          B: { adj: ['Bionic', 'Brave', 'Blazing', 'Bright', 'Bold', 'Brisk', 'Boundless'], noun: ['Beaver', 'Badger', 'Buffalo', 'Butterfly', 'Bison', 'Bear', 'Bobcat'] },
+          C: { adj: ['Cosmic', 'Clever', 'Crimson', 'Crystal', 'Curious', 'Cyber', 'Celestial'], noun: ['Cheetah', 'Chameleon', 'Crane', 'Cobra', 'Condor', 'Cat', 'Cougar'] },
+          D: { adj: ['Daring', 'Dusk', 'Dynamic', 'Drift', 'Dawn', 'Deep', 'Defiant'], noun: ['Dolphin', 'Dragon', 'Deer', 'Dingo', 'Duck', 'Dove', 'Dormouse'] },
+          E: { adj: ['Electric', 'Elegant', 'Echo', 'Eager', 'Eternal', 'Epic', 'Enigmatic'], noun: ['Eagle', 'Elephant', 'Elk', 'Ermine', 'Echidna', 'Falcon', 'Eel'] },
+          F: { adj: ['Focal', 'Frosty', 'Fierce', 'Feathered', 'Flash', 'Flying', 'Fearless'], noun: ['Fossa', 'Falcon', 'Fox', 'Flamingo', 'Ferret', 'Frog', 'Finch'] },
+          G: { adj: ['Groovy', 'Golden', 'Gallant', 'Gentle', 'Glacial', 'Grand', 'Galactic'], noun: ['Gorilla', 'Griffin', 'Gecko', 'Gazelle', 'Gull', 'Goat', 'Giraffe'] },
+          H: { adj: ['Hyper', 'Harmonious', 'Humble', 'Hasty', 'Heroic', 'Hybrid', 'Honorable'], noun: ['Hedgehog', 'Hawk', 'Heron', 'Hare', 'Hyena', 'Hamster', 'Hound'] },
+          I: { adj: ['Iron', 'Infinite', 'Inspiring', 'Indigo', 'Illusive', 'Ionic', 'Immortal'], noun: ['Ibex', 'Iguana', 'Impala', 'Ibis', 'Isopod', 'Insect', 'Indri'] },
+          J: { adj: ['Jammy', 'Jolly', 'Jade', 'Joyful', 'Jurassic', 'Jumping', 'Jubilant'], noun: ['Jellyfish', 'Jaguar', 'Jackal', 'Jay', 'Jerboa', 'Junco', 'Jackrabbit'] },
+          K: { adj: ['Kinetic', 'Keen', 'Kingly', 'Krypto', 'Karmic', 'Kaleido', 'Knightly'], noun: ['Kangaroo', 'Koala', 'Kingfisher', 'Kudu', 'Kestrel', 'Kiwi', 'Kinkajou'] },
+          L: { adj: ['Lunar', 'Lucid', 'Luminescent', 'Light', 'Lively', 'Laser', 'Luminous'], noun: ['Lobster', 'Lynx', 'Leopard', 'Lemur', 'Lion', 'Lark', 'Llama'] },
+          M: { adj: ['Mantic', 'Mystic', 'Mighty', 'Magic', 'Mirage', 'Matrix', 'Magnetic'], noun: ['Minotaur', 'Mongoose', 'Meerkat', 'Magpie', 'Mammoth', 'Mantis', 'Marmot'] },
+          N: { adj: ['Noble', 'Nebula', 'Nimble', 'Neon', 'Nova', 'Nordic', 'Natural'], noun: ['Numbat', 'Nautilus', 'Newt', 'Nightingale', 'Narwhal', 'Nyala', 'Nilgai'] },
+          O: { adj: ['Oneiric', 'Oracle', 'Orbital', 'Obsidian', 'Omega', 'Optic', 'Original'], noun: ['Ocelot', 'Owl', 'Otter', 'Osprey', 'Oryx', 'Octopus', 'Okapi'] },
+          P: { adj: ['Precise', 'Phantom', 'Pulse', 'Primal', 'Polar', 'Prismatic', 'Peaceful'], noun: ['Pangolin', 'Panther', 'Peacock', 'Penguin', 'Puma', 'Pelican', 'Panda'] },
+          Q: { adj: ['Quantum', 'Quick', 'Quiet', 'Quirky', 'Quenched', 'Quasar', 'Queenly'], noun: ['Quokka', 'Quail', 'Quoll', 'Quelea', 'Quagga', 'Quartz', 'Quetzal'] },
+          R: { adj: ['Raving', 'Radiant', 'Rhythmic', 'Rust', 'Rapid', 'Rebel', 'Resolute'], noun: ['Raven', 'Rhino', 'Raptor', 'Redpanda', 'Raccoon', 'Rabbit', 'Reindeer'] },
+          S: { adj: ['Solar', 'Swift', 'Stellar', 'Silver', 'Sonic', 'Shadow', 'Serene'], noun: ['Salamander', 'Sparrow', 'Seahorse', 'Scorpion', 'Shark', 'Seal', 'Serval'] },
+          T: { adj: ['Trusty', 'Turbo', 'Tidal', 'Twilight', 'Thunder', 'Titan', 'Tenacious'], noun: ['Tahr', 'Tiger', 'Turtle', 'Toucan', 'Tapir', 'Tern', 'Tarsier'] },
+          U: { adj: ['Utopian', 'Ultra', 'Umbral', 'Urban', 'Unity', 'Universal', 'Undaunted'], noun: ['Unicorn', 'Urchin', 'Uakari', 'Umbrellabird', 'Urial', 'Urutu', 'Upupa'] },
+          V: { adj: ['Vivid', 'Velvet', 'Valiant', 'Vortex', 'Vapor', 'Vector', 'Vibrant'], noun: ['Vulture', 'Viper', 'Vicuna', 'Vole', 'Vervet', 'Vespid', 'Viscacha'] },
+          W: { adj: ['Wily', 'Whispering', 'Warp', 'Wise', 'Wild', 'Winter', 'Wondering'], noun: ['Werewolf', 'Wolf', 'Walrus', 'Wombat', 'Whale', 'Weasel', 'Wolverine'] },
+          X: { adj: ['Xenial', 'Xylo', 'Xeric', 'Xpress', 'Xanthic', 'Xeno', 'Xemplar'], noun: ['Xerus', 'Xenops', 'Xiphos', 'Xeme', 'Xiphias', 'Xolo', 'Xanthid'] },
+          Y: { adj: ['Yakkety', 'Youthful', 'Yielding', 'Yarn', 'Yellow', 'Yonder', 'Yearning'], noun: ['Yak', 'Yeti', 'Yellowjacket', 'Yabby', 'Yorkie', 'Yuho', 'Yapok'] },
+          Z: { adj: ['Zesty', 'Zen', 'Zephyr', 'Zenith', 'Zero', 'Zigzag', 'Zealous'], noun: ['Zebra', 'Zebu', 'Zorilla', 'Zander', 'Zonkey', 'Zokor', 'Zenaida'] }
+        },
+        koConsonants: ['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'],
+        ko: {
+          'ㄱ': { adj: ['기민한', '고요한', '거대한', '고결한', '기품있는', '가벼운', '강인한'], noun: ['기린', '고래', '거북', '고양이', '가오리', '곰', '갈매기'] },
+          'ㄴ': { adj: ['날렵한', '노련한', '눈부신', '낙천적인', '너그러운', '놀라운', '낭만적인'], noun: ['늑대', '너구리', '노루', '나비', '낙타', '나무늘보', '날다람쥐'] },
+          'ㄷ': { adj: ['대담한', '단단한', '달콤한', '따뜻한', '당당한', '독립적인', '든든한'], noun: ['독수리', '두더지', '다람쥐', '돌고래', '두루미', '도마뱀', '당나귀'] },
+          'ㄹ': { adj: ['로맨틱한', '럭셔리한', '레몬빛', '린드', '릴랙스한', '라이트한', '리드미컬한'], noun: ['라쿤', '라마', '롭이어', '레오파드', '랫', '루스터', '로리스'] },
+          'ㅁ': { adj: ['민첩한', '매혹적인', '무결한', '명랑한', '묵직한', '맑은', '무한한'], noun: ['물개', '매', '무스', '미어캣', '문어', '말', '목화토끼'] },
+          'ㅂ': { adj: ['바람결의', '빛나는', '빠르고용감한', '백색의', '비범한', '부드러운', '별빛의'], noun: ['바다표범', '부엉이', '비버', '뱀', '백조', '표범', '바다거북'] },
+          'ㅅ': { adj: ['신비로운', '슬기로운', '수줍은', '상쾌한', '순수한', '새로운', '선명한'], noun: ['사슴', '사자', '수달', '솔개', '상어', '새', '스라소니'] },
+          'ㅇ': { adj: ['용맹한', '우아한', '영리한', '은빛', '온화한', '역동적인', '위풍당당한'], noun: ['여우', '얼룩말', '원숭이', '올빼미', '양', '오리', '알파카'] },
+          'ㅈ': { adj: ['자유로운', '조용한', '준엄한', '진취적인', '재빠른', '정직한', '지혜로운'], noun: ['제비', '자라', '재규어', '족제비', '지빠귀', '참새', '조랑말'] },
+          'ㅊ': { adj: ['침착한', '찬란한', '차분한', '초연한', '청명한', '철저한', '친근한'], noun: ['치타', '참새', '청개구리', '침팬지', '철갑상어', '칠면조', '청둥오리'] },
+          'ㅋ': { adj: ['쾌활한', '쿨한', '커다란', '칼같은', '클래식한', '경쾌한', '기묘한'], noun: ['코알라', '캥거루', '카멜레온', '코끼리', '코뿔소', '킹피셔', '콘도르'] },
+          'ㅌ': { adj: ['탄탄한', '특별한', '투명한', '태양빛', '탁월한', '털털한', '태평한'], noun: ['타조', '토끼', '투칸', '호랑이', '타이판', '터틀', '테리어'] },
+          'ㅍ': { adj: ['푸른', '포근한', '풍요로운', '평화로운', '파격적인', '퍼펙트한', '풋풋한'], noun: ['표범', '판다', '펠리컨', '플라밍고', '펭귄', '포니', '퓨마'] },
+          'ㅎ': { adj: ['화려한', '힘찬', '활기찬', '호기심많은', '환상적인', '호탕한', '한결같은'], noun: ['호랑이', '하마', '흑곰', '해달', '학', '하이에나', '황새'] }
+        }
+      };
+
+      // 1-2. City + Emotional Modifier Preset (35+ modifiers, 35+ cities with bilingual pairs)
+      const CITY_DATA = {
+        modifiers: [
+          { ko: '새벽녘의', en: 'Dawn-kissed' },
+          { ko: '비 내리는', en: 'Rainy' },
+          { ko: '네온빛', en: 'Neon-lit' },
+          { ko: '안개 낀', en: 'Misty' },
+          { ko: '노을 지는', en: 'Sunset' },
+          { ko: '눈 내리는', en: 'Snowy' },
+          { ko: '달빛 머금은', en: 'Moonlit' },
+          { ko: '바람 부는', en: 'Breezy' },
+          { ko: '햇살 가득한', en: 'Sun-drenched' },
+          { ko: '별 헤는 밤의', en: 'Starry' },
+          { ko: '고요한 밤의', en: 'Silent Night in' },
+          { ko: '어스름한', en: 'Dusklit' },
+          { ko: '황혼녘의', en: 'Twilight' },
+          { ko: '비 온 뒤의', en: 'After-Rain' },
+          { ko: '초가을의', en: 'Early Autumn' },
+          { ko: '한여름 밤의', en: 'Midsummer' },
+          { ko: '꿈결 같은', en: 'Dreamy' },
+          { ko: '적막한', en: 'Serene' },
+          { ko: '찬란한', en: 'Radiant' },
+          { ko: '푸른빛의', en: 'Azure' },
+          { ko: '낭만적인', en: 'Romantic' },
+          { ko: '희미한 조명의', en: 'Dimly-lit' },
+          { ko: '오래된 골목의', en: 'Cobblestone' },
+          { ko: '물결 이는', en: 'Rippling' },
+          { ko: '오로라빛', en: 'Aurora-glowing' },
+          { ko: '서늘한 아침의', en: 'Crisp Morning in' },
+          { ko: '커피 향 나는', en: 'Coffee-scented' },
+          { ko: '잠들지 않는', en: 'Sleepless' },
+          { ko: '가을비 내리는', en: 'Autumn-rain' },
+          { ko: '봄날의', en: 'Springtime' },
+          { ko: '바다 내음 가득한', en: 'Sea-salted' },
+          { ko: '시간이 멈춘 듯한', en: 'Timeless' },
+          { ko: '금빛 물결의', en: 'Golden-hour' },
+          { ko: '비밀스러운', en: 'Hidden' },
+          { ko: '은은한 가로등 아래의', en: 'Lamplit' },
+          { ko: '축제 전야의', en: 'Festival-eve' }
+        ],
+        cities: [
+          { ko: '교토', en: 'Kyoto' },
+          { ko: '런던', en: 'London' },
+          { ko: '서울', en: 'Seoul' },
+          { ko: '포르투', en: 'Porto' },
+          { ko: '피렌체', en: 'Florence' },
+          { ko: '삿포로', en: 'Sapporo' },
+          { ko: '프라하', en: 'Prague' },
+          { ko: '파리', en: 'Paris' },
+          { ko: '뉴욕', en: 'New York' },
+          { ko: '베를린', en: 'Berlin' },
+          { ko: '리스본', en: 'Lisbon' },
+          { ko: '암스테르담', en: 'Amsterdam' },
+          { ko: '비엔나', en: 'Vienna' },
+          { ko: '레이캬비크', en: 'Reykjavik' },
+          { ko: '베네치아', en: 'Venice' },
+          { ko: '취리히', en: 'Zurich' },
+          { ko: '바르셀로나', en: 'Barcelona' },
+          { ko: '에든버러', en: 'Edinburgh' },
+          { ko: '시드니', en: 'Sydney' },
+          { ko: '산토리니', en: 'Santorini' },
+          { ko: '부다페스트', en: 'Budapest' },
+          { ko: '이스탄불', en: 'Istanbul' },
+          { ko: '트롬쇠', en: 'Tromso' },
+          { ko: '오슬로', en: 'Oslo' },
+          { ko: '시애틀', en: 'Seattle' },
+          { ko: '더블린', en: 'Dublin' },
+          { ko: '밴쿠버', en: 'Vancouver' },
+          { ko: '제주', en: 'Jeju' },
+          { ko: '부산', en: 'Busan' },
+          { ko: '경주', en: 'Gyeongju' },
+          { ko: '강릉', en: 'Gangneung' },
+          { ko: '여수', en: 'Yeosu' },
+          { ko: '전주', en: 'Jeonju' },
+          { ko: '속초', en: 'Sokcho' },
+          { ko: '통영', en: 'Tongyeong' },
+          { ko: '헬싱키', en: 'Helsinki' }
+        ]
+      };
+
+      // 1-3. Project & System Release Codename (35+ myth/celestial, 35+ infra/tech nouns)
+      const CODENAME_DATA = {
+        prefixes: [
+          { ko: '오리온', en: 'Orion' },
+          { ko: '아르테미스', en: 'Artemis' },
+          { ko: '코발트', en: 'Cobalt' },
+          { ko: '노바', en: 'Nova' },
+          { ko: '타이탄', en: 'Titan' },
+          { ko: '헬리오스', en: 'Helios' },
+          { ko: '발키리', en: 'Valkyrie' },
+          { ko: '제피르', en: 'Zephyr' },
+          { ko: '아폴로', en: 'Apollo' },
+          { ko: '하이페리온', en: 'Hyperion' },
+          { ko: '이지스', en: 'Aegis' },
+          { ko: '크로노스', en: 'Chronos' },
+          { ko: '볼텍스', en: 'Vortex' },
+          { ko: '피닉스', en: 'Phoenix' },
+          { ko: '아틀라스', en: 'Atlas' },
+          { ko: '제네시스', en: 'Genesis' },
+          { ko: '이클립스', en: 'Eclipse' },
+          { ko: '넥서스', en: 'Nexus' },
+          { ko: '오로라', en: 'Aurora' },
+          { ko: '케르베로스', en: 'Cerberus' },
+          { ko: '크립톤', en: 'Krypton' },
+          { ko: '옵시디언', en: 'Obsidian' },
+          { ko: '솔라리아', en: 'Solaria' },
+          { ko: '네뷸라', en: 'Nebula' },
+          { ko: '프로메테우스', en: 'Prometheus' },
+          { ko: '트리톤', en: 'Triton' },
+          { ko: '퀘이사', en: 'Quasar' },
+          { ko: '폴라리스', en: 'Polaris' },
+          { ko: '티타늄', en: 'Titanium' },
+          { ko: '스펙트라', en: 'Spectra' },
+          { ko: '제니스', en: 'Zenith' },
+          { ko: '아스트라', en: 'Astra' },
+          { ko: '미라지', en: 'Mirage' },
+          { ko: '펄사', en: 'Pulsar' },
+          { ko: '에이펙스', en: 'Apex' },
+          { ko: '발할라', en: 'Valhalla' }
+        ],
+        suffixes: [
+          { ko: '게이트웨이', en: 'Gateway' },
+          { ko: '엔진', en: 'Engine' },
+          { ko: '프록시', en: 'Proxy' },
+          { ko: '넥서스', en: 'Nexus' },
+          { ko: '메시', en: 'Mesh' },
+          { ko: '릴레이', en: 'Relay' },
+          { ko: '클러스터', en: 'Cluster' },
+          { ko: '볼트', en: 'Vault' },
+          { ko: '브릿지', en: 'Bridge' },
+          { ko: '코어', en: 'Core' },
+          { ko: '비콘', en: 'Beacon' },
+          { ko: '패브릭', en: 'Fabric' },
+          { ko: '센티넬', en: 'Sentinel' },
+          { ko: '그리드', en: 'Grid' },
+          { ko: '매트릭스', en: 'Matrix' },
+          { ko: '라우터', en: 'Router' },
+          { ko: '하버', en: 'Harbor' },
+          { ko: '스핀들', en: 'Spindle' },
+          { ko: '셔틀', en: 'Shuttle' },
+          { ko: '상크툼', en: 'Sanctum' },
+          { ko: '사이퍼', en: 'Cipher' },
+          { ko: '포지', en: 'Forge' },
+          { ko: '파이프라인', en: 'Pipeline' },
+          { ko: '뱅가드', en: 'Vanguard' },
+          { ko: '시냅스', en: 'Synapse' },
+          { ko: '룸', en: 'Loom' },
+          { ko: '바스티온', en: 'Bastion' },
+          { ko: '헤이븐', en: 'Haven' },
+          { ko: '펄스', en: 'Pulse' },
+          { ko: '시타델', en: 'Citadel' },
+          { ko: '엔클레이브', en: 'Enclave' },
+          { ko: '프리즘', en: 'Prism' },
+          { ko: '파운드리', en: 'Foundry' },
+          { ko: '컨덕터', en: 'Conductor' },
+          { ko: '앵커', en: 'Anchor' },
+          { ko: '옵저버', en: 'Observer' }
+        ]
+      };
+
+      // 1-4. Startup / Service Naming (35+ action roots, 28+ startup suffixes)
+      const STARTUP_DATA = {
+        roots: [
+          { ko: '태스크', en: 'Task' },
+          { ko: '스냅', en: 'Snap' },
+          { ko: '닥', en: 'Doc' },
+          { ko: '클라우드', en: 'Cloud' },
+          { ko: '싱크', en: 'Sync' },
+          { ko: '데이터', en: 'Data' },
+          { ko: '코드', en: 'Code' },
+          { ko: '플로우', en: 'Flow' },
+          { ko: '옴니', en: 'Omni' },
+          { ko: '링크', en: 'Link' },
+          { ko: '마인드', en: 'Mind' },
+          { ko: '스마트', en: 'Smart' },
+          { ko: '하이퍼', en: 'Hyper' },
+          { ko: '퀵', en: 'Quick' },
+          { ko: '루프', en: 'Loop' },
+          { ko: '베이스', en: 'Base' },
+          { ko: '페이', en: 'Pay' },
+          { ko: '바이트', en: 'Byte' },
+          { ko: '웨이브', en: 'Wave' },
+          { ko: '메타', en: 'Meta' },
+          { ko: '펄스', en: 'Pulse' },
+          { ko: '볼트', en: 'Volt' },
+          { ko: '코어', en: 'Core' },
+          { ko: '팀', en: 'Team' },
+          { ko: '워크', en: 'Work' },
+          { ko: '스택', en: 'Stack' },
+          { ko: '드래프트', en: 'Draft' },
+          { ko: '시프트', en: 'Shift' },
+          { ko: '스파크', en: 'Spark' },
+          { ko: '바이브', en: 'Vibe' },
+          { ko: '에코', en: 'Echo' },
+          { ko: '블룸', en: 'Bloom' },
+          { ko: '네스트', en: 'Nest' },
+          { ko: '리프', en: 'Leap' },
+          { ko: '스카우트', en: 'Scout' },
+          { ko: '노트', en: 'Note' }
+        ],
+        suffixes: [
+          { ko: '이파이', en: 'ify', type: 'suffix' },
+          { ko: '플로우', en: 'Flow', type: 'word' },
+          { ko: '크래프트', en: 'Craft', type: 'word' },
+          { ko: '허브', en: 'Hub', type: 'word' },
+          { ko: '리', en: 'ly', type: 'suffix' },
+          { ko: '베이스', en: 'Base', type: 'word' },
+          { ko: '랩', en: 'Lab', type: 'word' },
+          { ko: '스택', en: 'Stack', type: 'word' },
+          { ko: '싱크', en: 'Sync', type: 'word' },
+          { ko: '웨이브', en: 'Wave', type: 'word' },
+          { ko: '펄스', en: 'Pulse', type: 'word' },
+          { ko: '포지', en: 'Forge', type: 'word' },
+          { ko: '독', en: 'Dock', type: 'word' },
+          { ko: '데스크', en: 'Desk', type: 'word' },
+          { ko: '파일럿', en: 'Pilot', type: 'word' },
+          { ko: '메이트', en: 'Mate', type: 'word' },
+          { ko: '스페이스', en: 'Space', type: 'word' },
+          { ko: '네스트', en: 'Nest', type: 'word' },
+          { ko: '패스', en: 'Path', type: 'word' },
+          { ko: '시프트', en: 'Shift', type: 'word' },
+          { ko: '박스', en: 'Box', type: 'word' },
+          { ko: '그리드', en: 'Grid', type: 'word' },
+          { ko: '레인', en: 'Lane', type: 'word' },
+          { ko: '아이오', en: 'io', type: 'suffix' },
+          { ko: '존', en: 'Zone', type: 'word' },
+          { ko: '루프', en: 'Loop', type: 'word' },
+          { ko: '와이어', en: 'Wire', type: 'word' },
+          { ko: '포트', en: 'Port', type: 'word' }
+        ]
+      };
+
+      // 1-5. Indie Game / Fantasy Naming (35+ titles/states, 35+ classes/objects)
+      const FANTASY_DATA = {
+        titles: [
+          { ko: '방랑하는', en: 'Wandering' },
+          { ko: '심연의', en: 'Abyssal' },
+          { ko: '침묵하는', en: 'Silent' },
+          { ko: '황혼의', en: 'Twilight' },
+          { ko: '시간을 걷는', en: 'Chrono-Walking' },
+          { ko: '어스름의', en: 'Dusklit' },
+          { ko: '타락한', en: 'Fallen' },
+          { ko: '빛바랜', en: 'Faded' },
+          { ko: '망각의', en: 'Oblivion' },
+          { ko: '영원을 꿈꾸는', en: 'Ever-Dreaming' },
+          { ko: '성스러운', en: 'Sacred' },
+          { ko: '안개 속의', en: 'Misty' },
+          { ko: '달빛의', en: 'Moonlit' },
+          { ko: '별빛을 쫓는', en: 'Star-Chasing' },
+          { ko: '얼어붙은', en: 'Frozen' },
+          { ko: '타오르는', en: 'Blazing' },
+          { ko: '검은 깃털의', en: 'Black-Feathered' },
+          { ko: '잊혀진', en: 'Forgotten' },
+          { ko: '고독한', en: 'Solitary' },
+          { ko: '영혼의', en: 'Soulbound' },
+          { ko: '은빛의', en: 'Silver' },
+          { ko: '차원 너머의', en: 'Astral' },
+          { ko: '비밀스러운', en: 'Arcane' },
+          { ko: '새벽을 여는', en: 'Dawn-Breaking' },
+          { ko: '그림자 진', en: 'Shadowed' },
+          { ko: '불멸의', en: 'Immortal' },
+          { ko: '파멸을 부르는', en: 'Doom-Bringer' },
+          { ko: '바람결의', en: 'Breeze-Borne' },
+          { ko: '비탄의', en: 'Grief-Stricken' },
+          { ko: '천공의', en: 'Celestial' },
+          { ko: '공허의', en: 'Voidborn' },
+          { ko: '잠든 영혼의', en: 'Slumbering' },
+          { ko: '붉은 달의', en: 'Crimson-Moon' },
+          { ko: '서약의', en: 'Covenant' },
+          { ko: '고대의', en: 'Ancient' },
+          { ko: '백색의', en: 'Ashen' }
+        ],
+        classes: [
+          { ko: '기록관', en: 'Archivist' },
+          { ko: '나침반', en: 'Compass' },
+          { ko: '파수꾼', en: 'Sentinel' },
+          { ko: '연금술사', en: 'Alchemist' },
+          { ko: '순례자', en: 'Pilgrim' },
+          { ko: '인도자', en: 'Harbinger' },
+          { ko: '수호자', en: 'Guardian' },
+          { ko: '마법사', en: 'Mage' },
+          { ko: '기사단원', en: 'Knight' },
+          { ko: '사냥꾼', en: 'Hunter' },
+          { ko: '현자', en: 'Sage' },
+          { ko: '대장장이', en: 'Blacksmith' },
+          { ko: '항해사', en: 'Navigator' },
+          { ko: '성배', en: 'Grail' },
+          { ko: '환영술사', en: 'Illusionist' },
+          { ko: '점성술사', en: 'Astrologer' },
+          { ko: '검투사', en: 'Gladiator' },
+          { ko: '추적자', en: 'Tracker' },
+          { ko: '사서', en: 'Librarian' },
+          { ko: '망령', en: 'Specter' },
+          { ko: '등대지기', en: 'Lighthouse Keeper' },
+          { ko: '방랑자', en: 'Wanderer' },
+          { ko: '그림자', en: 'Shadow' },
+          { ko: '인형사', en: 'Puppeteer' },
+          { ko: '예언자', en: 'Prophet' },
+          { ko: '수도사', en: 'Monk' },
+          { ko: '봉인관', en: 'Sealer' },
+          { ko: '유랑극단', en: 'Minstrel' },
+          { ko: '조율자', en: 'Tuner' },
+          { ko: '파괴자', en: 'Breaker' },
+          { ko: '오르골', en: 'Music Box' },
+          { ko: '모래시계', en: 'Hourglass' },
+          { ko: '천문시계', en: 'Astrolabe' },
+          { ko: '비석', en: 'Monolith' },
+          { ko: '사절', en: 'Emissary' },
+          { ko: '주술사', en: 'Shaman' }
+        ]
+      };
+
+      // 1-6. Custom Preset Sample Dictionaries
+      const CUSTOM_SAMPLES = {
+        prefixes: ['푸른', '고요한', '빛나는', '새벽', '빠른', '작은', '따뜻한', '용감한', '초록빛', '신비로운', '달콤한', '바람결', '은은한', '자유로운', '투명한'],
+        suffixes: ['파도', '여우', '별', '나무', '구름', '정원', '여행자', '고래', '나비', '등대', '도서관', '사서', '숲', '나침반', '기억']
+      };
+
+      /* ==========================================================================
+         2. Application State & Storage
+         ========================================================================== */
+      const state = {
+        currentPreset: 'ubuntu',
+        currentLang: 'ko', // 'ko' | 'en' | 'both'
+        currentCount: 10,
+        ubuntuLetter: 'all', // 'all' or specific letter
+        startupSeparator: 'none', // 'none' (CamelCase), 'dash', 'space'
+        customPrefixes: [...CUSTOM_SAMPLES.prefixes],
+        customSuffixes: [...CUSTOM_SAMPLES.suffixes],
+        customSeparator: ' ', // ' ', '-', '_', '', '.'
+        generatedResults: [],
+        favorites: []
+      };
+
+      const STORAGE_FAVS_KEY = 'name_weaver_favorites_v2';
+      const STORAGE_THEME_KEY = 'ui_theme';
+
+      /* ==========================================================================
+         3. DOM Elements Cache
+         ========================================================================== */
+      const el = {
+        themeToggleBtn: document.getElementById('theme-toggle-btn'),
+        presetTabs: document.getElementById('preset-tabs'),
+        presetInfoTitle: document.getElementById('preset-info-title'),
+        presetInfoDesc: document.getElementById('preset-info-desc'),
+        langSegmented: document.getElementById('lang-segmented'),
+        countSegmented: document.getElementById('count-segmented'),
+        modeOptionsContainer: document.getElementById('mode-options-container'),
+        generateBtn: document.getElementById('generate-btn'),
+        copyAllBtn: document.getElementById('copy-all-btn'),
+        clearResultsBtn: document.getElementById('clear-results-btn'),
+        namesGrid: document.getElementById('names-grid'),
+        resultsCountBadge: document.getElementById('results-count-badge'),
+        resultsModeBadge: document.getElementById('results-mode-badge'),
+        toastContainer: document.getElementById('toast-container'),
+        openFavBtn: document.getElementById('open-favorites-btn'),
+        closeFavBtn: document.getElementById('close-drawer-btn'),
+        drawerOverlay: document.getElementById('drawer-overlay'),
+        drawerList: document.getElementById('drawer-list'),
+        drawerCountText: document.getElementById('fav-drawer-count'),
+        favCounterBadge: document.getElementById('fav-counter-badge'),
+        copyFavAllBtn: document.getElementById('copy-fav-all-btn'),
+        clearFavAllBtn: document.getElementById('clear-fav-all-btn')
+      };
+
+      /* ==========================================================================
+         4. Utility & Helper Functions
+         ========================================================================== */
+      function getRandomItem(arr) {
+        if (!arr || !arr.length) return '';
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        const icon = document.createElement('span');
+        icon.textContent = type === 'success' ? '✓' : '💬';
+        toast.appendChild(icon);
+
+        const text = document.createTextNode(` ${message}`);
+        toast.appendChild(text);
+
+        el.toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(10px)';
+          toast.style.transition = 'all 0.25s ease';
+          setTimeout(() => toast.remove(), 250);
+        }, 2600);
+      }
+
+      function copyTextToClipboard(text, successMsg = '클립보드에 복사되었습니다!') {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(successMsg, 'success');
+        }).catch(() => {
+          // Fallback
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand('copy');
+            showToast(successMsg, 'success');
+          } catch (e) {
+            showToast('복사에 실패했습니다.', 'info');
+          }
+          document.body.removeChild(ta);
+        });
+      }
+
+      /* ==========================================================================
+         5. LocalStorage Favorites Management
+         ========================================================================== */
+      function loadFavorites() {
+        try {
+          const raw = localStorage.getItem(STORAGE_FAVS_KEY);
+          state.favorites = raw ? JSON.parse(raw) : [];
+        } catch (e) {
+          state.favorites = [];
+        }
+        updateFavoritesUI();
+      }
+
+      function saveFavorites() {
+        try {
+          localStorage.setItem(STORAGE_FAVS_KEY, JSON.stringify(state.favorites));
+        } catch (e) {
+          console.error(e);
+        }
+        updateFavoritesUI();
+      }
+
+      function toggleFavorite(item) {
+        const idx = state.favorites.findIndex(f => f.main === item.main && f.preset === item.preset);
+        if (idx >= 0) {
+          state.favorites.splice(idx, 1);
+          showToast(`보관함에서 삭제되었습니다.`, 'info');
+        } else {
+          state.favorites.unshift({
+            id: Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+            main: item.main,
+            sub: item.sub || '',
+            full: item.full,
+            preset: item.preset,
+            presetName: item.presetName,
+            date: new Date().toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          });
+          showToast(`⭐ 보관함에 저장되었습니다!`, 'success');
+        }
+        saveFavorites();
+        renderGeneratedCards(); // Re-render to update star state
+      }
+
+      function isFavorited(item) {
+        return state.favorites.some(f => f.main === item.main && f.preset === item.preset);
+      }
+
+      function updateFavoritesUI() {
+        const count = state.favorites.length;
+        if (el.favCounterBadge) el.favCounterBadge.textContent = count;
+        if (el.drawerCountText) el.drawerCountText.textContent = `총 ${count}개 저장됨`;
+
+        if (!el.drawerList) return;
+        if (count === 0) {
+          el.drawerList.innerHTML = `
+            <div style="text-align:center; padding:3rem 1rem; color:var(--text-muted);">
+              <div style="font-size:2.4rem; margin-bottom:0.5rem;">🌟</div>
+              <p style="font-size:0.9rem; font-weight:600; color:var(--text-secondary);">보관함이 비어 있습니다.</p>
+              <p style="font-size:0.75rem; margin-top:0.3rem;">생성된 이름 카드의 별표(★)를 눌러 보관해보세요.</p>
+            </div>
+          `;
+          return;
+        }
+
+        el.drawerList.innerHTML = state.favorites.map(item => `
+          <div class="fav-item-card" data-id="${item.id}">
+            <div class="fav-item-info">
+              <span class="fav-item-name">${item.main}</span>
+              ${item.sub ? `<span style="font-size:0.76rem; color:var(--text-secondary);">${item.sub}</span>` : ''}
+              <span class="fav-item-meta">${item.presetName} · ${item.date}</span>
+            </div>
+            <div class="fav-item-btns">
+              <button class="card-btn fav-copy-btn" title="복사" data-text="${item.full}">📋</button>
+              <button class="card-btn fav-del-btn" title="삭제" data-id="${item.id}" style="color:#ef4444;">✕</button>
+            </div>
+          </div>
+        `).join('');
+
+        // Attach listeners in drawer
+        el.drawerList.querySelectorAll('.fav-copy-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            copyTextToClipboard(btn.dataset.text);
+          });
+        });
+        el.drawerList.querySelectorAll('.fav-del-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            state.favorites = state.favorites.filter(f => f.id !== id);
+            saveFavorites();
+            renderGeneratedCards();
+          });
+        });
+      }
+
+      /* ==========================================================================
+         6. Preset Logic & Generation Engines
+         ========================================================================== */
+      const PRESET_DESCRIPTIONS = {
+        ubuntu: {
+          title: '🐧 우분투 스타일',
+          desc: '동일한 알파벳(A~Z) 또는 한국어 초성(ㄱ~ㅎ) 두운을 매칭하여 "Focal Fossa", "기민한 기린" 형태의 리듬감 있는 이름을 생성합니다.'
+        },
+        city: {
+          title: '🏙️ 도시 + 감성 수식어',
+          desc: '날씨, 시간대, 분위기를 담은 감성 수식어와 전 세계/국내 명소 도시를 결합하여 서정적인 이름을 만듭니다.'
+        },
+        codename: {
+          title: '🚀 프로젝트 & 시스템 릴리즈 코드네임',
+          desc: '신화, 천체, 원소 등의 웅장한 이름과 인프라/아키텍처 명사를 결합하여 전문적인 소프트웨어 프로젝트 명칭을 만듭니다.'
+        },
+        startup: {
+          title: '💡 스타트업 & 서비스 네이밍',
+          desc: '핵심 행동/가치 단어에 "-ify", "-flow", "-craft", "-hub" 등의 현대적인 IT 스타트업 접미사를 합성합니다.'
+        },
+        fantasy: {
+          title: '⚔️ 인디 게임 & 판타지 네이밍',
+          desc: '신비로운 칭호와 판타지 클래스, 아티팩트 오브젝트를 엮어 서사적이고 몰입감 넘치는 세계관 이름을 빚어냅니다.'
+        },
+        custom: {
+          title: '📂 커스텀 텍스트 / 파일 모드',
+          desc: '앞단 단어와 뒷단 단어를 직접 입력하거나 텍스트 파일을 드래그 앤 드롭하여 자유자재로 무작위 조합을 만듭니다.'
+        }
+      };
+
+      // Ubuntu Generator
+      function generateUbuntuName(lang, selectedLetter) {
+        if (lang === 'en') {
+          let letter = selectedLetter;
+          if (!letter || letter === 'all') {
+            letter = getRandomItem(UBUNTU_DATA.letters);
+          } else {
+            letter = letter.toUpperCase();
+            if (!UBUNTU_DATA.en[letter]) letter = 'F';
+          }
+          const adj = getRandomItem(UBUNTU_DATA.en[letter].adj);
+          const noun = getRandomItem(UBUNTU_DATA.en[letter].noun);
+          const name = `${adj} ${noun}`;
+          return { main: name, sub: `Ubuntu [${letter}] Edition`, full: name };
+        } else if (lang === 'ko') {
+          let chosung = selectedLetter;
+          if (!chosung || chosung === 'all' || !UBUNTU_DATA.ko[chosung]) {
+            chosung = getRandomItem(UBUNTU_DATA.koConsonants);
+          }
+          const adj = getRandomItem(UBUNTU_DATA.ko[chosung].adj);
+          const noun = getRandomItem(UBUNTU_DATA.ko[chosung].noun);
+          const name = `${adj} ${noun}`;
+          return { main: name, sub: `초성 [${chosung}] 두운 매칭`, full: name };
+        } else {
+          // Both (Bilingual)
+          let letter = selectedLetter;
+          if (!letter || letter === 'all' || !UBUNTU_DATA.en[letter]) {
+            letter = getRandomItem(UBUNTU_DATA.letters);
+          }
+          const adjEn = getRandomItem(UBUNTU_DATA.en[letter].adj);
+          const nounEn = getRandomItem(UBUNTU_DATA.en[letter].noun);
+          const enName = `${adjEn} ${nounEn}`;
+
+          const letterToKo = {
+            A:'ㅇ', B:'ㅂ', C:'ㅋ', D:'ㄷ', E:'ㅇ', F:'ㅍ', G:'ㄱ', H:'ㅎ', I:'ㅇ', J:'ㅈ',
+            K:'ㅋ', L:'ㄹ', M:'ㅁ', N:'ㄴ', O:'ㅇ', P:'ㅍ', Q:'ㅋ', R:'ㄹ', S:'ㅅ', T:'ㅌ',
+            U:'ㅇ', V:'ㅂ', W:'ㅇ', X:'ㅅ', Y:'ㅇ', Z:'ㅈ'
+          };
+          const koCons = letterToKo[letter] || 'ㄱ';
+          const adjKo = getRandomItem(UBUNTU_DATA.ko[koCons].adj);
+          const nounKo = getRandomItem(UBUNTU_DATA.ko[koCons].noun);
+          const koName = `${adjKo} ${nounKo}`;
+
+          return {
+            main: `${koName} (${enName})`,
+            sub: `두운 매칭: ${letter} & ${koCons}`,
+            full: `${koName} (${enName})`
+          };
+        }
+      }
+
+      // City + Mood Generator
+      function generateCityName(lang) {
+        const mod = getRandomItem(CITY_DATA.modifiers);
+        const city = getRandomItem(CITY_DATA.cities);
+
+        if (lang === 'ko') {
+          const name = `${mod.ko} ${city.ko}`;
+          return { main: name, sub: `${mod.en} ${city.en}`, full: name };
+        } else if (lang === 'en') {
+          const name = `${mod.en} ${city.en}`;
+          return { main: name, sub: `${mod.ko} ${city.ko}`, full: name };
+        } else {
+          const name = `${mod.ko} ${city.ko} (${mod.en} ${city.en})`;
+          return { main: name, sub: `City & Mood`, full: name };
+        }
+      }
+
+      // Codename Generator
+      function generateCodename(lang) {
+        const prefix = getRandomItem(CODENAME_DATA.prefixes);
+        const suffix = getRandomItem(CODENAME_DATA.suffixes);
+
+        if (lang === 'ko') {
+          const name = `${prefix.ko} ${suffix.ko}`;
+          return { main: name, sub: `${prefix.en} ${suffix.en}`, full: name };
+        } else if (lang === 'en') {
+          const name = `${prefix.en} ${suffix.en}`;
+          return { main: name, sub: `${prefix.ko} ${suffix.ko}`, full: name };
+        } else {
+          const name = `${prefix.ko} ${suffix.ko} (${prefix.en} ${suffix.en})`;
+          return { main: name, sub: `Release Codename`, full: name };
+        }
+      }
+
+      // Startup Generator
+      function generateStartupName(lang, sepStyle) {
+        const root = getRandomItem(STARTUP_DATA.roots);
+        const suffix = getRandomItem(STARTUP_DATA.suffixes);
+
+        let sepEn = '';
+        let sepKo = '';
+        if (sepStyle === 'dash') { sepEn = '-'; sepKo = '-'; }
+        else if (sepStyle === 'space') { sepEn = ' '; sepKo = ' '; }
+
+        const enName = `${root.en}${sepEn}${suffix.en}`;
+        const koName = `${root.ko}${sepKo}${suffix.ko}`;
+
+        if (lang === 'en') {
+          return { main: enName, sub: koName, full: enName };
+        } else if (lang === 'ko') {
+          return { main: koName, sub: enName, full: koName };
+        } else {
+          const name = `${koName} (${enName})`;
+          return { main: name, sub: `Startup Brand`, full: name };
+        }
+      }
+
+      // Fantasy / Indie Game Generator
+      function generateFantasyName(lang) {
+        const title = getRandomItem(FANTASY_DATA.titles);
+        const obj = getRandomItem(FANTASY_DATA.classes);
+
+        if (lang === 'ko') {
+          const name = `${title.ko} ${obj.ko}`;
+          return { main: name, sub: `${title.en} ${obj.en}`, full: name };
+        } else if (lang === 'en') {
+          const name = `${title.en} ${obj.en}`;
+          return { main: name, sub: `${title.ko} ${obj.ko}`, full: name };
+        } else {
+          const name = `${title.ko} ${obj.ko} (${title.en} ${obj.en})`;
+          return { main: name, sub: `Myth & Fantasy`, full: name };
+        }
+      }
+
+      // Custom File / Text Generator
+      function generateCustomName() {
+        const preList = state.customPrefixes.length ? state.customPrefixes : CUSTOM_SAMPLES.prefixes;
+        const postList = state.customSuffixes.length ? state.customSuffixes : CUSTOM_SAMPLES.suffixes;
+
+        const first = getRandomItem(preList).trim();
+        const second = getRandomItem(postList).trim();
+        const sep = state.customSeparator !== undefined ? state.customSeparator : ' ';
+
+        const name = `${first}${sep}${second}`;
+        return { main: name, sub: `사용자 단어 조합 (${preList.length}×${postList.length})`, full: name };
+      }
+
+      // Master Generator Orchestrator
+      function generateNames() {
+        const preset = state.currentPreset;
+        const lang = state.currentLang;
+        const count = state.currentCount;
+        const results = [];
+
+        for (let i = 0; i < count; i++) {
+          let item;
+          if (preset === 'ubuntu') {
+            item = generateUbuntuName(lang, state.ubuntuLetter);
+          } else if (preset === 'city') {
+            item = generateCityName(lang);
+          } else if (preset === 'codename') {
+            item = generateCodename(lang);
+          } else if (preset === 'startup') {
+            item = generateStartupName(lang, state.startupSeparator);
+          } else if (preset === 'fantasy') {
+            item = generateFantasyName(lang);
+          } else if (preset === 'custom') {
+            item = generateCustomName();
+          }
+
+          if (item) {
+            item.preset = preset;
+            item.presetName = PRESET_DESCRIPTIONS[preset].title;
+            results.push(item);
+          }
+        }
+
+        state.generatedResults = results;
+        renderGeneratedCards();
+      }
+
+      /* ==========================================================================
+         7. Rendering Functions
+         ========================================================================== */
+      function renderGeneratedCards() {
+        const results = state.generatedResults;
+        el.resultsCountBadge.textContent = `${results.length}개 결과`;
+        el.resultsModeBadge.textContent = PRESET_DESCRIPTIONS[state.currentPreset].title;
+
+        if (!results.length) {
+          el.namesGrid.innerHTML = `
+            <div class="empty-state" id="empty-state">
+              <div class="empty-state-icon">✨</div>
+              <h3>새로운 정체성을 발견할 준비가 되셨나요?</h3>
+              <p>좌측의 [새 이름 생성하기] 버튼을 누르거나 키보드의 <code>Space</code> / <code>Enter</code> 키를 눌러 감각적인 이름을 만들어보세요.</p>
+            </div>
+          `;
+          return;
+        }
+
+        el.namesGrid.innerHTML = results.map((item, idx) => {
+          const favorited = isFavorited(item);
+          return `
+            <div class="name-card" data-index="${idx}" title="클릭하여 복사">
+              <div class="card-top">
+                <span class="card-index">#${String(idx + 1).padStart(2, '0')}</span>
+                <div class="card-buttons">
+                  <button type="button" class="card-btn btn-star ${favorited ? 'favorited' : ''}" 
+                    title="${favorited ? '보관함에서 제거' : '보관함에 저장'}" 
+                    data-index="${idx}" aria-label="즐겨찾기">
+                    ${favorited ? '★' : '☆'}
+                  </button>
+                  <button type="button" class="card-btn btn-copy" title="클립보드 복사" data-index="${idx}" aria-label="복사">
+                    📋
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="card-main-name">${item.main}</div>
+                ${item.sub ? `<div class="card-sub-name">${item.sub}</div>` : ''}
+              </div>
+              <div class="card-footer">
+                <span class="card-tag">${item.presetName}</span>
+                <span class="card-copy-hint">클릭하여 복사 ✦</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Attach Card Listeners
+        el.namesGrid.querySelectorAll('.name-card').forEach(card => {
+          const index = parseInt(card.dataset.index, 10);
+          const item = results[index];
+
+          // Card click copies full text
+          card.addEventListener('click', (e) => {
+            if (e.target.closest('.card-btn')) return;
+            copyTextToClipboard(item.full, `'${item.main}' 복사 완료!`);
+            card.style.transform = 'scale(0.97)';
+            setTimeout(() => card.style.transform = '', 150);
+          });
+
+          // Star favorite toggle
+          const starBtn = card.querySelector('.btn-star');
+          if (starBtn) {
+            starBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              toggleFavorite(item);
+            });
+          }
+
+          // Copy button
+          const copyBtn = card.querySelector('.btn-copy');
+          if (copyBtn) {
+            copyBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              copyTextToClipboard(item.full, `'${item.main}' 복사 완료!`);
+            });
+          }
+        });
+      }
+
+      /* ==========================================================================
+         8. Mode-Specific Options Dynamic UI Render
+         ========================================================================== */
+      function renderModeOptions() {
+        const preset = state.currentPreset;
+        const container = el.modeOptionsContainer;
+
+        if (preset === 'ubuntu') {
+          const isKo = state.currentLang === 'ko';
+          container.innerHTML = `
+            <div class="control-group">
+              <label class="control-label" for="ubuntu-letter-select">
+                <span>${isKo ? '초성 지정 (선택)' : '알파벳 두운 지정 (선택)'}</span>
+                <span class="label-hint">특정 글자 강제</span>
+              </label>
+              <select id="ubuntu-letter-select" class="custom-select">
+                <option value="all">전체 무작위 (All Random)</option>
+                ${isKo
+                  ? UBUNTU_DATA.koConsonants.map(c => `<option value="${c}" ${state.ubuntuLetter === c ? 'selected' : ''}>${c} (예: ${UBUNTU_DATA.ko[c].adj[0]} ${UBUNTU_DATA.ko[c].noun[0]})</option>`).join('')
+                  : UBUNTU_DATA.letters.map(l => `<option value="${l}" ${state.ubuntuLetter === l ? 'selected' : ''}>${l} (예: ${UBUNTU_DATA.en[l].adj[0]} ${UBUNTU_DATA.en[l].noun[0]})</option>`).join('')
+                }
+              </select>
+            </div>
+          `;
+          const select = document.getElementById('ubuntu-letter-select');
+          select.addEventListener('change', (e) => {
+            state.ubuntuLetter = e.target.value;
+          });
+
+        } else if (preset === 'startup') {
+          container.innerHTML = `
+            <div class="control-group">
+              <label class="control-label" for="startup-sep-select">
+                <span>합성어 연결 방식</span>
+                <span class="label-hint">스타일 옵션</span>
+              </label>
+              <select id="startup-sep-select" class="custom-select">
+                <option value="none" ${state.startupSeparator === 'none' ? 'selected' : ''}>CamelCase 붙여쓰기 (예: Taskify)</option>
+                <option value="dash" ${state.startupSeparator === 'dash' ? 'selected' : ''}>하이픈 구분 (예: Task-ify)</option>
+                <option value="space" ${state.startupSeparator === 'space' ? 'selected' : ''}>공백 띄어쓰기 (예: Task ify)</option>
+              </select>
+            </div>
+          `;
+          document.getElementById('startup-sep-select').addEventListener('change', (e) => {
+            state.startupSeparator = e.target.value;
+          });
+
+        } else if (preset === 'custom') {
+          container.innerHTML = `
+            <div class="custom-mode-layout">
+              <div class="custom-dropzone" id="custom-dropzone">
+                <input type="file" id="custom-file-input" accept=".txt,.csv,.md,text/plain" multiple />
+                <span class="dropzone-title">📁 텍스트 파일 드래그 앤 드롭</span>
+                <span class="dropzone-desc">.txt 파일을 여기에 끌어놓거나 클릭하여 단어 목록 불러오기</span>
+              </div>
+              <div class="custom-textarea-grid">
+                <div class="custom-textarea-col">
+                  <label for="custom-pre-ta">
+                    <span>앞 단어 목록</span>
+                    <span id="custom-pre-count" style="color:var(--accent-color); font-weight:700;">${state.customPrefixes.length}개</span>
+                  </label>
+                  <textarea id="custom-pre-ta" class="custom-textarea" placeholder="줄바꿈으로 단어 입력">${state.customPrefixes.join('\n')}</textarea>
+                </div>
+                <div class="custom-textarea-col">
+                  <label for="custom-post-ta">
+                    <span>뒷 단어 목록</span>
+                    <span id="custom-post-count" style="color:var(--accent-color); font-weight:700;">${state.customSuffixes.length}개</span>
+                  </label>
+                  <textarea id="custom-post-ta" class="custom-textarea" placeholder="줄바꿈으로 단어 입력">${state.customSuffixes.join('\n')}</textarea>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+                <div style="flex:1;">
+                  <label class="control-label" style="margin-bottom:0.25rem;">
+                    <span>구분자 (Separator)</span>
+                  </label>
+                  <select id="custom-sep-select" class="custom-select" style="padding:0.4rem 0.6rem; font-size:0.78rem;">
+                    <option value=" " ${state.customSeparator === ' ' ? 'selected' : ''}>공백 띄어쓰기 (" ")</option>
+                    <option value="-" ${state.customSeparator === '-' ? 'selected' : ''}>하이픈 ("-")</option>
+                    <option value="_" ${state.customSeparator === '_' ? 'selected' : ''}>언더스코어 ("_")</option>
+                    <option value="" ${state.customSeparator === '' ? 'selected' : ''}>붙여쓰기 ("")</option>
+                    <option value="." ${state.customSeparator === '.' ? 'selected' : ''}>온점 (".")</option>
+                  </select>
+                </div>
+                <button type="button" id="load-sample-btn" class="sample-fill-btn" style="margin-top:1.1rem;">
+                  기본 샘플 채우기
+                </button>
+              </div>
+            </div>
+          `;
+
+          // Bind custom mode inputs
+          const preTa = document.getElementById('custom-pre-ta');
+          const postTa = document.getElementById('custom-post-ta');
+          const preCount = document.getElementById('custom-pre-count');
+          const postCount = document.getElementById('custom-post-count');
+          const sepSelect = document.getElementById('custom-sep-select');
+          const sampleBtn = document.getElementById('load-sample-btn');
+          const dropzone = document.getElementById('custom-dropzone');
+          const fileInput = document.getElementById('custom-file-input');
+
+          const updateFromTextareas = () => {
+            state.customPrefixes = preTa.value.split(/[\r\n,]+/).map(w => w.trim()).filter(Boolean);
+            state.customSuffixes = postTa.value.split(/[\r\n,]+/).map(w => w.trim()).filter(Boolean);
+            preCount.textContent = `${state.customPrefixes.length}개`;
+            postCount.textContent = `${state.customSuffixes.length}개`;
+          };
+
+          preTa.addEventListener('input', updateFromTextareas);
+          postTa.addEventListener('input', updateFromTextareas);
+
+          sepSelect.addEventListener('change', (e) => {
+            state.customSeparator = e.target.value;
+          });
+
+          sampleBtn.addEventListener('click', () => {
+            state.customPrefixes = [...CUSTOM_SAMPLES.prefixes];
+            state.customSuffixes = [...CUSTOM_SAMPLES.suffixes];
+            preTa.value = state.customPrefixes.join('\n');
+            postTa.value = state.customSuffixes.join('\n');
+            updateFromTextareas();
+            showToast('샘플 단어 목록이 채워졌습니다!', 'success');
+          });
+
+          // File Drag & Drop & Upload handling
+          const handleFiles = (files) => {
+            Array.from(files).forEach((file, fIdx) => {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const words = String(e.target.result).split(/[\r\n,]+/).map(w => w.trim()).filter(Boolean);
+                if (!words.length) return;
+                if (fIdx === 0) {
+                  state.customPrefixes = words;
+                  preTa.value = words.join('\n');
+                } else {
+                  state.customSuffixes = words;
+                  postTa.value = words.join('\n');
+                }
+                updateFromTextareas();
+                showToast(`'${file.name}' 단어 목록 (${words.length}개)을 불러왔습니다.`, 'success');
+              };
+              reader.readAsText(file);
+            });
+          };
+
+          fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+            e.target.value = '';
+          });
+
+          dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('drag-over');
+          });
+          dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+          dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            if (e.dataTransfer.files && e.dataTransfer.files.length) {
+              handleFiles(e.dataTransfer.files);
+            }
+          });
+
+        } else {
+          // City, Codename, Fantasy presets
+          container.innerHTML = `
+            <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.45;">
+              <span>✨ <strong>${PRESET_DESCRIPTIONS[preset].title}</strong> 사전(35+개 핵심 단어)이 내장되어 있어 수만 가지의 고유한 조합이 생성됩니다.</span>
+            </div>
+          `;
+        }
+      }
+
+      /* ==========================================================================
+         9. Theme Management & Initial Setup
+         ========================================================================== */
+      function initTheme() {
+        const saved = localStorage.getItem(STORAGE_THEME_KEY);
+        if (saved === 'light') {
+          document.body.className = 'light-theme';
+        } else {
+          document.body.className = 'dark-theme';
+        }
+
+        if (el.themeToggleBtn) {
+          el.themeToggleBtn.addEventListener('click', () => {
+            const isLight = document.body.classList.toggle('light-theme');
+            document.body.classList.toggle('dark-theme', !isLight);
+            localStorage.setItem(STORAGE_THEME_KEY, isLight ? 'light' : 'dark');
+            showToast(`${isLight ? '라이트' : '다크'} 모드로 전환되었습니다.`, 'info');
+          });
+        }
+      }
+
+      /* ==========================================================================
+         10. Event Handlers & Initialization
+         ========================================================================== */
+      function initEvents() {
+        // Preset Tabs
+        el.presetTabs.querySelectorAll('.preset-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            const preset = tab.dataset.preset;
+            if (state.currentPreset === preset) return;
+
+            el.presetTabs.querySelectorAll('.preset-tab').forEach(t => {
+              t.classList.remove('active');
+              t.setAttribute('aria-selected', 'false');
+            });
+            tab.classList.add('active');
+            tab.setAttribute('aria-selected', 'true');
+
+            state.currentPreset = preset;
+            state.ubuntuLetter = 'all'; // reset filter
+            el.presetInfoTitle.textContent = PRESET_DESCRIPTIONS[preset].title;
+            el.presetInfoDesc.textContent = PRESET_DESCRIPTIONS[preset].desc;
+
+            renderModeOptions();
+            generateNames();
+          });
+        });
+
+        // Language Segmented Control
+        el.langSegmented.querySelectorAll('.seg-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            el.langSegmented.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.currentLang = btn.dataset.lang;
+            renderModeOptions();
+            generateNames();
+          });
+        });
+
+        // Count Segmented Control
+        el.countSegmented.querySelectorAll('.seg-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            el.countSegmented.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.currentCount = parseInt(btn.dataset.count, 10);
+            generateNames();
+          });
+        });
+
+        // Generate Button
+        el.generateBtn.addEventListener('click', () => {
+          generateNames();
+          showToast('새로운 이름이 직조되었습니다! ✦', 'info');
+        });
+
+        // Copy All Results Button
+        el.copyAllBtn.addEventListener('click', () => {
+          if (!state.generatedResults.length) {
+            showToast('복사할 생성 결과가 없습니다.', 'info');
+            return;
+          }
+          const allText = state.generatedResults.map(r => r.full).join('\n');
+          copyTextToClipboard(allText, `생성된 ${state.generatedResults.length}개의 이름이 모두 복사되었습니다!`);
+        });
+
+        // Clear Results Button
+        el.clearResultsBtn.addEventListener('click', () => {
+          state.generatedResults = [];
+          renderGeneratedCards();
+          showToast('결과 화면을 비웠습니다.', 'info');
+        });
+
+        // Drawer Open / Close
+        el.openFavBtn.addEventListener('click', () => {
+          el.drawerOverlay.classList.add('open');
+        });
+        el.closeFavBtn.addEventListener('click', () => {
+          el.drawerOverlay.classList.remove('open');
+        });
+        el.drawerOverlay.addEventListener('click', (e) => {
+          if (e.target === el.drawerOverlay) {
+            el.drawerOverlay.classList.remove('open');
+          }
+        });
+
+        // Copy All Favorites
+        el.copyFavAllBtn.addEventListener('click', () => {
+          if (!state.favorites.length) {
+            showToast('보관함에 저장된 이름이 없습니다.', 'info');
+            return;
+          }
+          const text = state.favorites.map(f => f.full).join('\n');
+          copyTextToClipboard(text, `보관함 ${state.favorites.length}개 이름이 복사되었습니다!`);
+        });
+
+        // Clear All Favorites
+        el.clearFavAllBtn.addEventListener('click', () => {
+          if (!state.favorites.length) return;
+          if (confirm('보관함에 저장된 모든 이름을 삭제하시겠습니까?')) {
+            state.favorites = [];
+            saveFavorites();
+            renderGeneratedCards();
+            showToast('보관함을 비웠습니다.', 'info');
+          }
+        });
+
+        // Global Keyboard Shortcut: Space or Enter to generate immediately
+        window.addEventListener('keydown', (e) => {
+          // If drawer is open and user presses Escape, close drawer
+          if (e.key === 'Escape' && el.drawerOverlay.classList.contains('open')) {
+            el.drawerOverlay.classList.remove('open');
+            return;
+          }
+
+          // Do NOT trigger generation if user is actively typing in input, textarea, or select
+          const activeTag = document.activeElement ? document.activeElement.tagName.toUpperCase() : '';
+          if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') {
+            return;
+          }
+
+          if (e.code === 'Space' || e.key === ' ' || e.code === 'Enter') {
+            e.preventDefault();
+            generateNames();
+            showToast('새로운 이름이 직조되었습니다! ✦', 'info');
+          }
+        });
+      }
+
+      /* ==========================================================================
+         11. Bootstrap Application
+         ========================================================================== */
+      document.addEventListener('DOMContentLoaded', () => {
+        initTheme();
+        loadFavorites();
+        initEvents();
+        renderModeOptions();
+        generateNames(); // Generate initial batch
+      });
+
+    })();
+  </script>
 </body>
 
 </html>
