@@ -59,9 +59,10 @@ function initNavigation() {
   const navHome = document.getElementById('nav-home');
   const navName = document.getElementById('nav-name-generator');
   const navPalette = document.getElementById('nav-color-palette');
+  const navIp = document.getElementById('nav-ip-lookup');
 
   // Reset all
-  [navHome, navName, navPalette].forEach(nav => {
+  [navHome, navName, navPalette, navIp].forEach(nav => {
     if (nav) {
       nav.classList.remove('active');
       nav.removeAttribute('aria-current');
@@ -77,6 +78,11 @@ function initNavigation() {
     if (navPalette) {
       navPalette.classList.add('active');
       navPalette.setAttribute('aria-current', 'page');
+    }
+  } else if (pathname.includes('ip-lookup')) {
+    if (navIp) {
+      navIp.classList.add('active');
+      navIp.setAttribute('aria-current', 'page');
     }
   } else {
     if (navHome) {

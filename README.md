@@ -12,6 +12,7 @@ python3 -m http.server 4173
 
 ## 포함된 도구
 
+- **IP Inspector (내 IP 조회)**: 현재 접속 중인 공인 IP 주소(IPv4/IPv6), 지리적 위치(국가, 도시, 타임존, 위경도 좌표), 통신사(ISP / ASN), 브라우저 및 OS 클라이언트 환경 진단 정보 실시간 확인, 원클릭 클립보드 복사 및 인터랙티브 지도(OpenStreetMap) 시각화를 제공합니다.
 - **Palette Inspector (색상 팔레트)**: 자체 하모니 생성(유사색/보색/파스텔/다크/랜덤), 개별 컬러 잠금(Lock) 및 인라인/피커 편집, 슬롯 확장(6/10/12개), 실전 블로그 목업(라이트/다크 전환, 자동 가독성 매핑, WCAG 대비 검수) 및 외부 AI 프롬프트 연동/가져오기를 제공합니다.
 - **Name Weaver**: 샘플 규칙 또는 사용자가 선택한 단어 파일을 조합해 이름을 생성합니다.
 
@@ -19,6 +20,7 @@ python3 -m http.server 4173
 
 - `index.html`, `home.css`: 메인 홈 대시보드
 - `common.css`, `common.js`: 공통 테마, 네비게이션 바 및 유틸리티
+- `ip-lookup.html`, `ip-lookup.css`, `ip-lookup.js`: 내 IP 조회 (IP Inspector)
 - `name-generator.html`, `name-generator.css`, `name-generator.js`: 이름 생성기 (Name Weaver)
 - `color-palette.html`, `color-palette.css`, `color-palette.js`: 색상 팔레트 (Palette Inspector)
 - `uploads/`: 단어 텍스트 데이터셋

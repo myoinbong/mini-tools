@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내 IP 조회 (IP Inspector) - Mini Tools</title>
+  <meta name="description" content="접속 중인 공인 IP 주소(IPv4/IPv6), 지리적 위치, 통신사(ISP), 네트워크 정보 및 브라우저 환경을 실시간으로 확인하고 복사하세요.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Leaflet CSS for Map Visualization -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="ip-lookup.css">
+</head>
+
+<body class="dark-theme">
+  <!-- 배경 애니메이션 데코레이션 블롭 -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="app-layout">
+    <!-- Header Navigation -->
+    <header class="app-header">
+      <a href="index.html" class="logo-area" id="logo-link" title="Mini Tools 홈으로 이동">
+        <span class="logo-icon">⚡</span>
+        <h1>Mini Tools</h1>
+        <span class="badge">Suite</span>
+      </a>
+      <div class="header-actions">
+        <nav class="main-nav" id="main-nav" aria-label="메인 네비게이션">
+          <a href="index.html" class="nav-item" id="nav-home">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">홈</span>
+          </a>
+          <a href="name-generator.html" class="nav-item" id="nav-name-generator">
+            <span class="nav-icon">🏷️</span>
+            <span class="nav-label">이름 생성기</span>
+          </a>
+          <a href="color-palette.html" class="nav-item" id="nav-color-palette">
+            <span class="nav-icon">🎨</span>
+            <span class="nav-label">색상 팔레트</span>
+          </a>
+          <a href="ip-lookup.html" class="nav-item active" id="nav-ip-lookup" aria-current="page">
+            <span class="nav-icon">🌐</span>
+            <span class="nav-label">내 IP 조회</span>
+          </a>
+        </nav>
+        <button id="theme-toggle-btn" class="icon-btn" title="테마 변경 (다크/라이트)" aria-label="테마 변경">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+            <path d="m4.93 4.93 1.41 1.41" />
+            <path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" />
+            <path d="M20 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" />
+            <path d="m19.07 4.93-1.41 1.41" />
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="ip-container">
+      <!-- Hero Section -->
+      <section class="ip-hero">
+        <div class="ip-hero-badge">
+          <span>🌐 Network Inspector</span>
+        </div>
+        <h2 class="ip-hero-title">내 공인 IP <span class="gradient-text">조회 & 진단</span></h2>
+        <p class="ip-hero-subtitle">접속 중인 네트워크의 공인 IP 주소와 위치, ISP 및 클라이언트 환경을 실시간으로 확인합니다.</p>
+      </section>
+
+      <!-- Primary IP Hero Display Card -->
+      <section class="ip-display-card" aria-label="현재 공인 IP 주소">
+        <div class="ip-status-indicator">
+          <span class="pulse-dot" id="status-pulse-dot"></span>
+          <span id="status-text">IP 및 네트워크 정보 조회 중...</span>
+        </div>
+
+        <div class="ip-address-wrap">
+          <span class="ip-address-label">Your Public IP Address</span>
+          <div class="ip-address-value" id="ip-address-display">조회 중...</div>
+          <div class="ip-meta-tags">
+            <span class="ip-tag accent" id="ip-type-tag">IPv4</span>
+            <span class="ip-tag" id="ip-country-tag">위치 확인 중...</span>
+            <span class="ip-tag">Public Network</span>
+          </div>
+        </div>
+
+        <div class="ip-actions">
+          <button id="copy-ip-btn" class="ip-btn ip-btn-primary" type="button" title="IP 주소를 클립보드에 복사">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+            </svg>
+            <span>IP 주소 복사</span>
+          </button>
+          <button id="refresh-ip-btn" class="ip-btn ip-btn-secondary" type="button" title="IP 정보 새로고침">
+            <svg id="refresh-icon" class="spin-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+              <path d="M16 21h5v-5" />
+            </svg>
+            <span>새로고침</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Detailed Info Grid (3 Columns) -->
+      <section class="ip-specs-grid">
+        <!-- 1. Location Details -->
+        <article class="detail-card">
+          <div class="detail-card-header">
+            <span class="detail-card-icon">📍</span>
+            <h3 class="detail-card-title">지리적 위치 (Location)</h3>
+          </div>
+          <ul class="spec-list">
+            <li class="spec-item">
+              <span class="spec-key">국가</span>
+              <span class="spec-val" id="spec-country">-</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">도시 / 지역</span>
+              <span class="spec-val" id="spec-city-region">-</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">타임존</span>
+              <span class="spec-val" id="spec-timezone">-</span>
+            </li>
+          </ul>
+        </article>
+
+        <!-- 2. ISP & Network Details -->
+        <article class="detail-card">
+          <div class="detail-card-header">
+            <span class="detail-card-icon">🏢</span>
+            <h3 class="detail-card-title">네트워크 & 통신사 (ISP)</h3>
+          </div>
+          <ul class="spec-list">
+            <li class="spec-item">
+              <span class="spec-key">제공업체 (ISP)</span>
+              <span class="spec-val" id="spec-isp">-</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">소속 조직 (Org)</span>
+              <span class="spec-val" id="spec-org">-</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">AS 번호 (ASN)</span>
+              <span class="spec-val mono" id="spec-asn">-</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">네트워크 종류</span>
+              <span class="spec-val">
+                <span class="spec-val-badge">공인 광대역 (Public)</span>
+              </span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">보안 진단</span>
+              <span class="spec-val">
+                <span class="spec-val-badge">정상 연결 (Clean)</span>
+              </span>
+            </li>
+          </ul>
+        </article>
+
+        <!-- 3. Client & Browser Diagnostics -->
+        <article class="detail-card">
+          <div class="detail-card-header">
+            <span class="detail-card-icon">💻</span>
+            <h3 class="detail-card-title">내 브라우저 환경 (Client)</h3>
+          </div>
+          <ul class="spec-list">
+            <li class="spec-item">
+              <span class="spec-key">브라우저</span>
+              <span class="spec-val" id="spec-client-browser">-</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">운영체제 (OS)</span>
+              <span class="spec-val" id="spec-client-os">-</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">화면 해상도</span>
+              <span class="spec-val mono" id="spec-client-screen">-</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">선호 언어</span>
+              <span class="spec-val" id="spec-client-lang">-</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">접속 프로토콜</span>
+              <span class="spec-val mono" id="spec-client-protocol">-</span>
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <!-- 4. Interactive Map Section (On-Demand Activation) -->
+      <section class="map-card" id="map-container">
+        <div class="map-card-header">
+          <div class="map-title-wrap">
+            <span class="detail-card-icon">🗺️</span>
+            <h3 class="detail-card-title">대략적인 네트워크 권역 지도</h3>
+          </div>
+          <div class="map-header-actions">
+            <button id="toggle-map-btn" class="ip-btn ip-btn-secondary map-toggle-btn" type="button">
+              <span>🗺️</span>
+              <span id="map-btn-text">지도로 대략적인 위치 보기</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Placeholder when map is not yet loaded (matches map-wrapper height) -->
+        <div id="map-placeholder" class="map-placeholder">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">🌏</div>
+            <div class="placeholder-title">지도는 비활성화 상태입니다</div>
+            <p class="placeholder-desc">개인정보 보호 및 불필요한 데이터 통신을 줄이기 위해 지도는 요청 시에만 로드됩니다.</p>
+            <button id="load-map-btn" class="ip-btn ip-btn-primary" type="button">
+              <span>🗺️ 광역 지도 불러오기</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Real map container (hidden by default) -->
+        <div id="map-wrapper" class="map-wrapper" style="display: none;">
+          <div class="map-viewport-container">
+            <div id="map-element"></div>
+          </div>
+          <div class="privacy-notice">
+            <span class="privacy-notice-icon">ℹ️</span>
+            <div>
+              <strong>광역 위치 정보 안내:</strong> 표시되는 범위는 통신사(ISP)의 네트워크 기지국/라우터 허브 권역(반경 수십 km)입니다. 실제 거주지나 개인의 물리적 위치가 절대 아닙니다.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Leaflet JS for Map -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Common & Page Scripts -->
+  <script src="common.js"></script>
+  <script src="ip-lookup.js"></script>
+</body>
+
+</html>
