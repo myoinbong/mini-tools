@@ -1,6 +1,7 @@
 # mini-tools
 
 Palette Inspector와 Name Weaver를 한 페이지에서 제공하는 정적 미니 도구 모음입니다.
+접속주소: https://myoinbong.github.io/mini-tools/
 
 ## 실행
 
