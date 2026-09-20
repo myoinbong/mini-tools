@@ -101,18 +101,30 @@
           <div class="ip-meta-tags">
             <span class="ip-tag accent" id="ip-type-tag">IPv4</span>
             <span class="ip-tag" id="ip-country-tag">위치 확인 중...</span>
-            <span class="ip-tag">Public Network</span>
+            <span class="ip-tag" id="ip-network-tag">Public Network</span>
+            <span class="ip-tag sub-tag" id="local-ip-tag" title="WebRTC를 통한 내부 사설 IP 탐지 결과">
+              <span class="tag-dot" id="local-ip-dot"></span>
+              <span id="local-ip-badge-text">로컬 IP: 탐색 중...</span>
+            </span>
           </div>
         </div>
 
         <div class="ip-actions">
-          <button id="copy-ip-btn" class="ip-btn ip-btn-primary" type="button" title="IP 주소를 클립보드에 복사">
+          <button id="copy-ip-btn" class="ip-btn ip-btn-primary" type="button" title="공인 IP 주소를 클립보드에 복사">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
               <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
             </svg>
-            <span>IP 주소 복사</span>
+            <span>공인 IP 복사</span>
+          </button>
+          <button id="copy-local-ip-btn" class="ip-btn ip-btn-secondary" type="button" title="로컬 사설 IP 주소 복사" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+            </svg>
+            <span>로컬 IP 복사</span>
           </button>
           <button id="refresh-ip-btn" class="ip-btn ip-btn-secondary" type="button" title="IP 정보 새로고침">
             <svg id="refresh-icon" class="spin-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -172,15 +184,25 @@
               <span class="spec-val mono" id="spec-asn">-</span>
             </li>
             <li class="spec-item">
-              <span class="spec-key">네트워크 종류</span>
-              <span class="spec-val">
+              <span class="spec-key">로컬 사설 IP (LAN)</span>
+              <span class="spec-val mono" id="spec-local-ip">
+                <span class="spec-val-badge">탐색 중...</span>
+              </span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">접속 호스트 (Domain)</span>
+              <span class="spec-val mono" id="spec-host-domain">-</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-key">네트워크 분류</span>
+              <span class="spec-val" id="spec-ip-class">
                 <span class="spec-val-badge">공인 광대역 (Public)</span>
               </span>
             </li>
             <li class="spec-item">
-              <span class="spec-key">보안 진단</span>
-              <span class="spec-val">
-                <span class="spec-val-badge">정상 연결 (Clean)</span>
+              <span class="spec-key">WebRTC 진단</span>
+              <span class="spec-val" id="spec-webrtc-status">
+                <span class="spec-val-badge">정상 연결 (Active)</span>
               </span>
             </li>
           </ul>
@@ -254,6 +276,52 @@
             <div>
               <strong>광역 위치 정보 안내:</strong> 표시되는 범위는 통신사(ISP)의 네트워크 기지국/라우터 허브 권역(반경 수십 km)입니다. 실제 거주지나 개인의 물리적 위치가 절대 아닙니다.
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Network Architecture & IP Knowledge Guide -->
+      <section class="guide-card" aria-label="네트워크 및 IP 주소 분류 가이드">
+        <div class="guide-card-header">
+          <div class="guide-title-wrap">
+            <span class="detail-card-icon">💡</span>
+            <div>
+              <h3 class="guide-card-title">네트워크 및 IP 분류 이해하기</h3>
+              <p class="guide-card-subtitle">공인 IP, 사설(내부) IP, 그리고 서버와 브라우저의 네트워크 식별 원리</p>
+            </div>
+          </div>
+        </div>
+        <div class="guide-grid">
+          <div class="guide-item">
+            <div class="guide-item-badge">Public IP</div>
+            <h4 class="guide-item-title">🌐 공인 IP (외부 IP)</h4>
+            <p class="guide-item-desc">
+              전 세계 인터넷망에서 유일하게 식별되는 주소로, ISP(통신사)가 모뎀이나 공유기에 부여합니다. 외부 웹사이트나 서버가 사용자를 식별할 때 확인하는 IP입니다.
+            </p>
+          </div>
+
+          <div class="guide-item">
+            <div class="guide-item-badge">Private IP</div>
+            <h4 class="guide-item-title">🏠 로컬 사설 IP (내부망)</h4>
+            <p class="guide-item-desc">
+              공유기나 사설 네트워크 내부(예: <code>192.168.x.x</code>, <code>10.x.x.x</code>)에서 기기 간 구분을 위해 부여되는 주소입니다. 인터넷 외부로는 직접 노출되지 않습니다.
+            </p>
+          </div>
+
+          <div class="guide-item">
+            <div class="guide-item-badge">NAT Architecture</div>
+            <h4 class="guide-item-title">🔄 서버 vs 브라우저 탐지 원리</h4>
+            <p class="guide-item-desc">
+              웹 서버(PHP, Node.js 등)는 공유기의 <strong>NAT(주소 변환)</strong>를 거쳐 통신하므로 클라이언트의 사설 IP를 직접 알 수 없습니다. 반면 웹 브라우저는 <strong>WebRTC P2P 기술</strong>을 활용하여 기기 로컬 단에서 사설 IP 조회를 시도할 수 있습니다.
+            </p>
+          </div>
+
+          <div class="guide-item">
+            <div class="guide-item-badge">Privacy Shield</div>
+            <h4 class="guide-item-title">🛡️ 브라우저 mDNS 보안 보호</h4>
+            <p class="guide-item-desc">
+              최신 브라우저(Chrome, Safari 등)는 웹사이트가 사용자의 로컬 IP를 수집하여 기기 지문(Fingerprinting)을 생성하는 것을 막기 위해 사설 IP 대신 난수화된 <code>.local</code> mDNS 주소로 마스킹하여 보호합니다.
+            </p>
           </div>
         </div>
       </section>

@@ -6,6 +6,7 @@
 // State Management
 const IPState = {
   ipData: null,
+  localIPData: null,
   clientData: null,
   mapInstance: null,
   mapMarker: null,
@@ -196,7 +197,190 @@ function renderErrorState(errorMessage) {
   }
 }
 
-// 5. Render Data to DOM safely
+// 5. IP Classification & Diagnostics Helper
+function classifyIP(ip) {
+  if (!ip) return '알 수 없음';
+  if (ip === '127.0.0.1' || ip === '::1' || ip.startsWith('127.')) {
+    return '루프백 (Loopback)';
+  }
+  // RFC 1918 Private Ranges & APIPA Link-Local
+  if (/(^192\.168\.)|(^10\.)|(^172\.(1[6-9]|2\d|3[0-1])\.)|(^169\.254\.)/.test(ip)) {
+    return '사설 IP (RFC 1918 Private)';
+  }
+  return '공인 광대역 (Public Routable)';
+}
+
+// WebRTC Local Private IP Detector
+function detectLocalPrivateIP(timeoutMs = 3500) {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined' || !window.RTCPeerConnection) {
+      return resolve({
+        status: 'unsupported',
+        ip: null,
+        displayText: 'WebRTC 미지원',
+        badgeClass: '',
+        note: '브라우저가 WebRTC 기술을 지원하지 않습니다.'
+      });
+    }
+
+    let resolved = false;
+    const foundCandidates = [];
+
+    const finish = (result) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      try {
+        if (pc) pc.close();
+      } catch (e) {}
+      resolve(result);
+    };
+
+    const timer = setTimeout(() => {
+      if (foundCandidates.length > 0) {
+        const mdns = foundCandidates.find(c => c.type === 'mdns');
+        if (mdns) {
+          return finish({
+            status: 'mdns',
+            ip: mdns.val,
+            displayText: 'mDNS 보호됨 (.local)',
+            badgeClass: 'warning',
+            note: '브라우저 지문 추적(Fingerprinting) 방지 정책으로 실제 사설 IP 대신 난수화된 mDNS 호스트명이 제공됩니다.'
+          });
+        }
+      }
+      finish({
+        status: 'not_detected',
+        ip: null,
+        displayText: '확인 불가 (보안 차단)',
+        badgeClass: '',
+        note: '브라우저 확장 프로그램 또는 보안 정책에 의해 WebRTC 로컬 IP 조회가 차단되었습니다.'
+      });
+    }, timeoutMs);
+
+    let pc;
+    try {
+      pc = new RTCPeerConnection({
+        iceServers: [] // 로컬 candidate만 수집
+      });
+
+      pc.createDataChannel('local-ip-detect');
+      pc.createOffer()
+        .then(offer => pc.setLocalDescription(offer))
+        .catch(err => {
+          finish({
+            status: 'error',
+            ip: null,
+            displayText: '조회 실패',
+            badgeClass: '',
+            note: err.message || 'WebRTC Offer 생성 실패'
+          });
+        });
+
+      pc.onicecandidate = (event) => {
+        if (!event || !event.candidate) {
+          return;
+        }
+
+        const candidateStr = event.candidate.candidate || '';
+
+        // 1. IPv4 사설 대역 매칭
+        const ipMatch = candidateStr.match(/(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3})/);
+        if (ipMatch) {
+          const detectedIp = ipMatch[1];
+          finish({
+            status: 'success',
+            ip: detectedIp,
+            displayText: detectedIp,
+            badgeClass: 'active',
+            note: 'WebRTC P2P Candidate를 통해 로컬 사설망 IP를 감지했습니다.'
+          });
+          return;
+        }
+
+        // 2. mDNS (.local) 매칭
+        const mdnsMatch = candidateStr.match(/([a-zA-Z0-9-]+\.local)/);
+        if (mdnsMatch) {
+          foundCandidates.push({ type: 'mdns', val: mdnsMatch[1] });
+        }
+      };
+
+      pc.onicegatheringstatechange = () => {
+        if (pc && pc.iceGatheringState === 'complete') {
+          if (foundCandidates.length > 0) {
+            const mdns = foundCandidates.find(c => c.type === 'mdns');
+            if (mdns) {
+              finish({
+                status: 'mdns',
+                ip: mdns.val,
+                displayText: 'mDNS 보호됨 (.local)',
+                badgeClass: 'warning',
+                note: '브라우저 지문 추적(Fingerprinting) 방지 정책으로 실제 사설 IP 대신 난수화된 mDNS 호스트명이 제공됩니다.'
+              });
+              return;
+            }
+          }
+          finish({
+            status: 'not_found',
+            ip: null,
+            displayText: '사설 IP 비노출 (보안 보호)',
+            badgeClass: '',
+            note: '브라우저가 로컬 IP 후보를 외부에 노출하지 않도록 보호하고 있습니다.'
+          });
+        }
+      };
+    } catch (e) {
+      finish({
+        status: 'error',
+        ip: null,
+        displayText: '조회 실패',
+        badgeClass: '',
+        note: e.message || 'WebRTC 연결 생성 불가'
+      });
+    }
+  });
+}
+
+// 6. Update Local IP UI State
+async function updateLocalIPInfo() {
+  const localDot = document.getElementById('local-ip-dot');
+  const localBadgeText = document.getElementById('local-ip-badge-text');
+  const specLocalIp = document.getElementById('spec-local-ip');
+  const specWebrtcStatus = document.getElementById('spec-webrtc-status');
+  const copyLocalBtn = document.getElementById('copy-local-ip-btn');
+
+  if (localBadgeText) localBadgeText.textContent = '로컬 IP: 탐색 중...';
+  if (localDot) localDot.className = 'tag-dot';
+
+  const result = await detectLocalPrivateIP();
+  IPState.localIPData = result;
+
+  if (localDot) {
+    localDot.className = 'tag-dot' + (result.badgeClass ? ` ${result.badgeClass}` : '');
+  }
+
+  if (result.status === 'success') {
+    if (localBadgeText) localBadgeText.textContent = `로컬 IP: ${result.ip}`;
+    if (specLocalIp) specLocalIp.innerHTML = `<span class="spec-val-badge" style="color: #10b981;">${result.ip}</span>`;
+    if (specWebrtcStatus) specWebrtcStatus.innerHTML = `<span class="spec-val-badge" style="color: #10b981;">감지 완료 (P2P Active)</span>`;
+    if (copyLocalBtn) {
+      copyLocalBtn.style.display = 'inline-flex';
+      copyLocalBtn.title = `로컬 사설 IP [${result.ip}] 복사`;
+    }
+  } else if (result.status === 'mdns') {
+    if (localBadgeText) localBadgeText.textContent = '로컬 IP: mDNS 보호됨';
+    if (specLocalIp) specLocalIp.innerHTML = `<span class="spec-val-badge" style="color: #f59e0b;" title="mDNS 식별자: ${result.ip}">mDNS 마스킹됨 (.local)</span>`;
+    if (specWebrtcStatus) specWebrtcStatus.innerHTML = `<span class="spec-val-badge">mDNS 프라이버시 보호</span>`;
+    if (copyLocalBtn) copyLocalBtn.style.display = 'none';
+  } else {
+    if (localBadgeText) localBadgeText.textContent = `로컬 IP: ${result.displayText}`;
+    if (specLocalIp) specLocalIp.innerHTML = `<span class="spec-val-badge">${result.displayText}</span>`;
+    if (specWebrtcStatus) specWebrtcStatus.innerHTML = `<span class="spec-val-badge">차단 또는 미지원</span>`;
+    if (copyLocalBtn) copyLocalBtn.style.display = 'none';
+  }
+}
+
+// 7. Render Data to DOM safely
 function renderIPData(data) {
   IPState.ipData = data;
 
@@ -219,6 +403,16 @@ function renderIPData(data) {
   setSafeText('spec-org', data.org);
   setSafeText('spec-asn', data.asn);
 
+  // Host Domain & IP Classification
+  const hostDomain = window.location.hostname || 'localhost';
+  setSafeText('spec-host-domain', hostDomain);
+
+  const ipClass = classifyIP(data.ip);
+  const specIpClass = document.getElementById('spec-ip-class');
+  if (specIpClass) {
+    specIpClass.innerHTML = `<span class="spec-val-badge">${ipClass}</span>`;
+  }
+
   // Client Specs
   const client = collectClientEnvironment();
   setSafeText('spec-client-browser', client.browser);
@@ -226,6 +420,9 @@ function renderIPData(data) {
   setSafeText('spec-client-screen', client.screenRes);
   setSafeText('spec-client-lang', client.language);
   setSafeText('spec-client-protocol', client.protocol);
+
+  // Trigger Local Private IP Detection concurrently
+  updateLocalIPInfo();
 
   // Handle Map availability
   if (data.latitude && data.longitude) {
@@ -375,58 +572,70 @@ function initMapControls() {
   }
 }
 
-// 7. Clipboard Copy Actions
-function initCopyAction() {
-  const copyBtn = document.getElementById('copy-ip-btn');
-  if (!copyBtn) return;
+// 8. Clipboard Helper & Copy Actions
+async function copyToClipboard(text, label, buttonEl) {
+  if (!text || text === '-' || text === '조회 실패') {
+    if (typeof showToast === 'function') {
+      showToast(`복사할 ${label}가 없습니다.`, 'info');
+    }
+    return;
+  }
 
-  copyBtn.addEventListener('click', async () => {
-    const ip = IPState.ipData ? IPState.ipData.ip : document.getElementById('ip-address-display')?.textContent?.trim();
-    if (!ip || ip === '-' || ip === '조회 실패') {
-      if (typeof showToast === 'function') {
-        showToast('복사할 IP 주소가 없습니다.', 'info');
-      }
-      return;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
     }
 
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(ip);
-      } else {
-        // Fallback for non-https or older browser
-        const textarea = document.createElement('textarea');
-        textarea.value = ip;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-      }
-
-      // UI visual feedback
-      const originalText = copyBtn.innerHTML;
-      copyBtn.innerHTML = '<span>✓</span><span>복사 완료!</span>';
-      copyBtn.style.background = 'var(--success-color)';
-
-      if (typeof showToast === 'function') {
-        showToast(`IP 주소 [${ip}] 가 클립보드에 복사되었습니다.`, 'success');
-      }
+    if (buttonEl) {
+      const originalHtml = buttonEl.innerHTML;
+      buttonEl.innerHTML = '<span>✓</span><span>복사 완료!</span>';
+      buttonEl.style.background = 'var(--success-color)';
 
       setTimeout(() => {
-        copyBtn.innerHTML = originalText;
-        copyBtn.style.background = '';
+        buttonEl.innerHTML = originalHtml;
+        buttonEl.style.background = '';
       }, 2000);
-    } catch (err) {
-      console.error('클립보드 복사 실패:', err);
-      if (typeof showToast === 'function') {
-        showToast('클립보드 복사에 실패했습니다.', 'info');
-      }
     }
-  });
+
+    if (typeof showToast === 'function') {
+      showToast(`${label} [${text}] 가 클립보드에 복사되었습니다.`, 'success');
+    }
+  } catch (err) {
+    console.error('클립보드 복사 실패:', err);
+    if (typeof showToast === 'function') {
+      showToast('클립보드 복사에 실패했습니다.', 'info');
+    }
+  }
 }
 
-// 8. Refresh Action
+function initCopyAction() {
+  const copyBtn = document.getElementById('copy-ip-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const ip = IPState.ipData ? IPState.ipData.ip : document.getElementById('ip-address-display')?.textContent?.trim();
+      copyToClipboard(ip, '공인 IP 주소', copyBtn);
+    });
+  }
+
+  const copyLocalBtn = document.getElementById('copy-local-ip-btn');
+  if (copyLocalBtn) {
+    copyLocalBtn.addEventListener('click', () => {
+      const localIp = IPState.localIPData?.ip;
+      copyToClipboard(localIp, '로컬 사설 IP 주소', copyLocalBtn);
+    });
+  }
+}
+
+// 9. Refresh Action
 function initRefreshAction() {
   const refreshBtn = document.getElementById('refresh-ip-btn');
   if (!refreshBtn) return;
@@ -434,9 +643,10 @@ function initRefreshAction() {
   refreshBtn.addEventListener('click', () => {
     if (IPState.isLoading) return;
     if (typeof showToast === 'function') {
-      showToast('IP 정보를 새로고침합니다...', 'info');
+      showToast('IP 및 네트워크 정보를 새로고침합니다...', 'info');
     }
     fetchIPData();
+    updateLocalIPInfo();
   });
 }
 
@@ -446,4 +656,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initRefreshAction();
   initMapControls();
   fetchIPData();
+  updateLocalIPInfo();
 });
